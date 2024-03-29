@@ -2,7 +2,6 @@
 // @ts-nocheck
 import { Bot } from "grammy";
 import CharacterAI from "node_characterai";
-import runBot from "./runBot";
 import runWorkers from "./workers";
 import runBot from "./bot";
 import { config } from "dotenv";
