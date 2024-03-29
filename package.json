@@ -1,0 +1,34 @@
+{
+  "name": "zahar_ai",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "author": "LarendsD",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "run": "ts-node src/index.ts",
+    "run:prod": "node dist/index.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@types/node-cron": "^3.0.11",
+    "grammy": "^1.21.1",
+    "node-cron": "^3.0.3",
+    "node_characterai": "^1.2.7",
+    "typescript": "*"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "@typescript-eslint/parser": "^7.4.0",
+    "dotenv": "^16.4.5",
+    "eslint": "^8.0.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-promise": "^6.0.0",
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2"
+  }
+}
