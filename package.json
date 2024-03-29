@@ -4,6 +4,7 @@
   "main": "src/index.ts",
   "author": "LarendsD",
   "license": "MIT",
+  "type": "module",
   "private": true,
   "scripts": {
     "run": "ts-node src/index.ts",
