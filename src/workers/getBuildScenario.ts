@@ -7,7 +7,7 @@ export default (characterAiChat1: any, characterAiChat2: any) => async () => {
   const newScenario = [];
 
   let lastResponse: string =
-    parsedScenario[parsedScenario.length - 1] || "Привет! Как дела?";
+    parsedScenario[parsedScenario.length - 1] || "Привет! Как дела?)";
 
   const scenarioRounds = Number(process.env.WORKER_BUILD_SCENARIO_ROUNDS);
 
