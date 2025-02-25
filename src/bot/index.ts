@@ -1,10 +1,11 @@
 import { Api, Bot, Context, RawApi } from "grammy";
-import initCommands from "./commands";
-import initOns from "./ons";
+import initCommands from "./commands/index.js";
+import initOns from "./ons/index.js";
+import {CAINode} from 'cainode';
 
-export default async (bot: Bot<Context, Api<RawApi>>, characterAiChat: any) => {
-  initCommands(bot, characterAiChat);
-  initOns(bot, characterAiChat);
+export default async (bot: Bot<Context, Api<RawApi>>, client: CAINode) => {
+  initCommands(bot, client);
+  initOns(bot, client);
 
   bot.start({
     onStart: (botInfo) => console.log(`Bot ${botInfo.username} started!`),

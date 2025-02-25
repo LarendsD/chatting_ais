@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import { Bot } from "grammy";
-import CharacterAI from "node_characterai";
-import runWorkers from "./workers";
-import runBot from "./bot";
+// import {CAINode} from 'cainode';
+import {CAINode} from 'cainode';
+import runWorkers from "./workers/index.js";
+import runBot from "./bot/index.js";
 import { config } from "dotenv";
 
 config();
@@ -17,23 +18,22 @@ const run = async () => {
 
   const characterAiUserToken = process.env.CHARACTER_AI_USER_TOKEN;
 
-  const characterAi = new CharacterAI();
-  await characterAi.authenticateWithToken(characterAiUserToken);
+  const characterAiTimyr = new CAINode();
+  const characterAiZahar = new CAINode();
+
+  await characterAiTimyr.login(characterAiUserToken);
+  await characterAiZahar.login(characterAiUserToken);
 
   const zaharBot = new Bot(zaharBotToken);
   const timyrBot = new Bot(timyrBotToken);
 
-  const zaharCharacterAiChat = await characterAi.createOrContinueChat(
-    zaharCharacterAiChatToken,
-  );
-  const timyrCharacterAiChat = await characterAi.createOrContinueChat(
-    timyrCharacterAiChatToken,
-  );
+  await characterAiZahar.character.connect(zaharCharacterAiChatToken);
+  await characterAiTimyr.character.connect(timyrCharacterAiChatToken);
 
-  runWorkers(timyrBot, zaharBot, timyrCharacterAiChat, zaharCharacterAiChat);
+  // runWorkers(timyrBot, zaharBot, characterAiTimyr, characterAiZahar);
 
-  runBot(timyrBot, timyrCharacterAiChat);
-  runBot(zaharBot, zaharCharacterAiChat);
+  runBot(timyrBot, characterAiTimyr);
+  runBot(zaharBot, characterAiZahar);
 };
 
 run();

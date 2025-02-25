@@ -1,8 +1,26 @@
 import { Context, CommandContext } from "grammy";
+import {CAINode} from 'cainode';
 import { writeFileSync } from "fs";
-import { scenarioPath } from "../../workers";
+import { scenarioPath } from "../../workers/index.js";
 
-export default (characterAiChat: any) =>
+const deleteMessages = async (client: CAINode, nextToken?: string) => {
+  const {meta, turns} = await client.chat.history_chat_turns(undefined, nextToken);
+
+  console.log(`Messages to delete: ${turns.length}`);
+
+  for (const turn of turns) {
+    console.log(`Message id: ${turn.turn_key.turn_id}`);
+    await client.character.delete_message(turn.turn_key.turn_id);
+  }
+
+  // await Promise.all(turns.map((turn) => client.character.delete_message(turn.turn_key.turn_id)));
+
+  if (turns.length >= 50) {
+    await deleteMessages(client, meta.next_token);
+  }
+}
+
+export default (client: CAINode) =>
   async (ctx: CommandContext<Context>) => {
     if (!ctx.message) {
       return;
@@ -19,11 +37,7 @@ export default (characterAiChat: any) =>
       );
     }
 
-    await characterAiChat.deleteMessagesBulk(
-      Number(process.env.DELETE_CHARACTER_AI_CHAT_HISTORY_BATCH),
-      false,
-      true,
-    );
+    await deleteMessages(client);
 
     writeFileSync(scenarioPath, JSON.stringify([], null, 2));
 

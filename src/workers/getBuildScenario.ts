@@ -1,31 +1,82 @@
 import { readFileSync, writeFileSync } from "fs";
-import { scenarioPath } from ".";
+import { scenarioPath } from "./index.js";
+import {CAINode} from 'cainode';
+import Scenario from "./types/scenario.type.js";
+import voiceByBotId from "src/bot/utils/voiceByBotId.js";
+import { Api, Bot, Context, RawApi } from "grammy";
 
-export default (characterAiChat1: any, characterAiChat2: any) => async () => {
+export default (
+  bot1: Bot<Context, Api<RawApi>>,
+  bot2: Bot<Context, Api<RawApi>>,
+  client1: CAINode,
+  client2: CAINode,
+) => async () => {
+  console.log('Job building scenario start');
   const scenario = readFileSync(scenarioPath, "utf-8");
-  const parsedScenario = JSON.parse(scenario);
+  const parsedScenario: Scenario[] = JSON.parse(scenario);
   const newScenario = [];
 
-  let lastResponse: string =
-    parsedScenario[parsedScenario.length - 1] || "Привет! Как дела?)";
+  let lastResponse =
+    parsedScenario[parsedScenario.length - 1];
 
   const scenarioRounds = Number(process.env.WORKER_BUILD_SCENARIO_ROUNDS);
 
-  for (let i = 0; i < scenarioRounds; i++) {
-    const response1 = await characterAiChat1.sendAndAwaitResponse(
-      lastResponse,
-      true,
-    );
-    const response2 = await characterAiChat2.sendAndAwaitResponse(
-      response1.text,
-      true,
-    );
-    lastResponse = response2.text;
+  let lastMessage;
 
-    newScenario.push(response1.text, response2.text);
+  for (let i = 0; i < scenarioRounds; i++) {
+    const response1 = await client1.character.send_message(
+      lastResponse?.text || 'Привет! Как дела?',
+    );
+
+    const firstResponse1Candidate = response1.turn.candidates[0];
+
+    const tts1 = await client1.character.replay_tts(
+      response1.turn.turn_key.turn_id,
+      firstResponse1Candidate.candidate_id,
+      voiceByBotId[bot1.botInfo.id],
+    );
+
+    const response2 = await client2.character.send_message(
+      firstResponse1Candidate.raw_content,
+    );
+
+    const firstResponse2Candidate = response2.turn.candidates[0];
+
+    const tts2 = await client2.character.replay_tts(
+      response2.turn.turn_key.turn_id,
+      firstResponse2Candidate.candidate_id,
+      voiceByBotId[bot2.botInfo.id],
+    );
+
+    lastMessage = firstResponse2Candidate.raw_content;
+    lastResponse = {
+      text: firstResponse2Candidate.raw_content, 
+      audioLink: tts2.replayUrl,
+    };
+
+    newScenario.push(
+      {
+        text: firstResponse1Candidate.raw_content, 
+        audioLink: tts1.replayUrl,
+      },
+      {
+        text: firstResponse2Candidate.raw_content, 
+        audioLink: tts2.replayUrl,
+      }
+    );
+  }
+
+  const firstMessage = newScenario[0];
+  const duplicates = newScenario.filter((message) => message.text === firstMessage.text);
+
+  if (duplicates.length >= 5) {
+    newScenario[newScenario.length - 1] =
+      "Чет хуйню какую-то говорим, не? Тебе не кажется, что пора сменить диалог, а то бля зациклились чёт";
   }
 
   writeFileSync(scenarioPath, JSON.stringify(newScenario, null, 2));
 
   console.log("Job building scenario success!");
+
+  return lastMessage;
 };

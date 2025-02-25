@@ -5,13 +5,15 @@
   "author": "LarendsD",
   "license": "MIT",
   "private": true,
+  "type": "module",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "tsx src/index.ts",
     "start:prod": "node dist/index.js",
     "build": "tsc"
   },
   "dependencies": {
     "@types/node-cron": "^3.0.11",
+    "cainode": "^1.2.2",
     "grammy": "^1.21.1",
     "node-cron": "^3.0.3",
     "node_characterai": "^1.2.7",

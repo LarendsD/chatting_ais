@@ -52,7 +52,7 @@ const run = () => {
       const from = message.from_id;
       resultMessage.push(message.text);
 
-      if (parsedData.messages[Number(index) + 1].from_id !== from) {
+      if (parsedData.messages[Number(index) + 1]?.from_id !== from) {
         result.push(`${mapping[from]}: ${resultMessage.join(" ")}`);
         resultMessage.splice(0);
       }
