@@ -35,7 +35,6 @@ export default (client: CAINode) =>
 
         return ctx.replyWithAudio(result.replayUrl, {
           reply_parameters: { message_id: ctx.message.message_id },
-          thumbnail: 'test',
           caption: firstMessage,
         }) 
       } catch (error) {
