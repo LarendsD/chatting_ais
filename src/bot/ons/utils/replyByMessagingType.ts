@@ -29,6 +29,8 @@ const textReply = async (
 
   const firstMessage = response.turn.candidates[0].raw_content;
 
+  console.log(firstMessage);
+
   return ctx.reply(firstMessage, {
     reply_parameters: { message_id: ctx.message.message_id },
   });
@@ -45,6 +47,8 @@ const voiceReply = async (
   const voiceLink = await getVoiceLink(ctx.me.id, client, response);
 
   const firstMessage = response.turn.candidates[0].raw_content;
+
+  console.log(firstMessage);
 
   return ctx.replyWithVoice(voiceLink, {
     reply_parameters: { message_id: ctx.message.message_id },
