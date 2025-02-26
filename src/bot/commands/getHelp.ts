@@ -6,7 +6,6 @@ export default () =>
       return;
     }
 
-    if (ctx.message.reply_to_message?.from?.username === ctx.me.username) {
       return ctx.reply(`
         Доступные команды (только для администраторов):
 /textMode - текстовый режим
@@ -15,5 +14,4 @@ export default () =>
 /new - начать новый диалог
 /clear - очистить историю сообщений
       `);
-    }
   };

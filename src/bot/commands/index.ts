@@ -18,5 +18,5 @@ export default (bot: BotContext, client: CAINode) => {
   bot.command('textMode', getChangeMode(BotMessagingMode.TEXT));
   bot.command('voiceAndTextMode', getChangeMode(BotMessagingMode.TEXT_AND_VOICE));
 
-  bot.command('help', getHelp());
+  bot.chatType('private').command('help', getHelp());
 };
