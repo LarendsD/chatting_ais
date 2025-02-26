@@ -3,11 +3,11 @@ import { scenarioPath } from "./index.js";
 import {CAINode} from 'cainode';
 import Scenario from "./types/scenario.type.js";
 import voiceByBotId from "src/bot/utils/voiceByBotId.js";
-import { Api, Bot, Context, RawApi } from "grammy";
+import BotContext from "src/bot/types/BotContext.interface.js";
 
 export default (
-  bot1: Bot<Context, Api<RawApi>>,
-  bot2: Bot<Context, Api<RawApi>>,
+  bot1: BotContext,
+  bot2: BotContext,
   client1: CAINode,
   client2: CAINode,
 ) => async () => {

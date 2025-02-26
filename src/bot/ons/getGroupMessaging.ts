@@ -1,9 +1,11 @@
-import { Context, Filter } from "grammy";
+import { Context, Filter, SessionFlavor } from "grammy";
 import {CAINode} from 'cainode';
 import voiceByBotId from "../utils/voiceByBotId.js";
+import SessionData from "../types/SessionData.interface.js";
+import replyByMessagingMode from "./utils/replyByMessagingType.js";
 
 export default (client: CAINode) =>
-  async (ctx: Filter<Context, "message">) => {
+  async (ctx: Filter<Context & SessionFlavor<SessionData>, "message">) => {
     console.log(ctx.message);
     const me = await ctx.api.getMe();
     if (
@@ -13,27 +15,8 @@ export default (client: CAINode) =>
     ) {
       try {
         const text = ctx.message.text.replace(`@${me.username}`, "");
-  
-        const response = await client.character.send_message(text);
-
-        const result = await client.character.replay_tts(
-          response.turn.turn_key.turn_id, 
-          response.turn.candidates[0].candidate_id,
-          voiceByBotId[ctx.me.id],
-        );
-
-        console.log(JSON.stringify(response, null, 2));
-
-        const firstMessage = response.turn.candidates[0].raw_content;
      
-        return ctx.replyWithVoice(result.replayUrl, {
-          reply_parameters: { message_id: ctx.message.message_id },
-          caption: firstMessage,
-        });
-
-        /* return ctx.reply(firstMessage, {
-          reply_parameters: { message_id: ctx.message.message_id },
-        }); */
+        return replyByMessagingMode(ctx, client, {text});
       } catch (error) {
         console.error(error);
 

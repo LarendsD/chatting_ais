@@ -1,16 +1,11 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import { Context, Filter, InputFile } from "grammy";
-// import { readFileSync } from "fs";
-import gTTS from "gtts";
-import { join } from "path";
-import { tmpdir } from "os";
-import { createReadStream } from "fs";
+import { Context, Filter, SessionFlavor } from "grammy";
 import {CAINode} from 'cainode';
-import voiceByBotId from "../utils/voiceByBotId.js";
+import SessionData from "../types/SessionData.interface.js";
+import replyByMessagingMode from "./utils/replyByMessagingType.js";
 
 export default (client: CAINode) =>
-  async (ctx: Filter<Context, "message">) => {
+  async (ctx: Filter<Context & SessionFlavor<SessionData>, "message">) => {
     console.log(ctx.message);
     if (ctx.message.text) {
       try {
@@ -21,22 +16,7 @@ export default (client: CAINode) =>
         // console.log('После');
         // console.log(client.user.info.user.user)
 
-        const response = await client.character.send_message(ctx.message.text);
-
-        const result = await client.character.replay_tts(
-          response.turn.turn_key.turn_id, 
-          response.turn.candidates[0].candidate_id,
-          voiceByBotId[ctx.me.id],
-        );
-
-        console.log(JSON.stringify(response, null, 2));
-
-        const firstMessage = response.turn.candidates[0].raw_content;
-
-        return ctx.replyWithAudio(result.replayUrl, {
-          reply_parameters: { message_id: ctx.message.message_id },
-          caption: firstMessage,
-        }) 
+        return replyByMessagingMode(ctx, client, {text: ctx.message.text});
       } catch (error) {
         console.error(error);
 

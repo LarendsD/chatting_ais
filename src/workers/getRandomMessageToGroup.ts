@@ -1,13 +1,13 @@
-import { Api, Bot, Context, RawApi } from "grammy";
 import {CAINode} from 'cainode';
 import { setTimeout } from "timers/promises";
 import voiceByBotId from "src/bot/utils/voiceByBotId.js";
+import BotContext from "src/bot/types/BotContext.interface.js";
 
 export default (
     client1: CAINode,
     client2: CAINode,
-    bot1: Bot<Context, Api<RawApi>>,
-    bot2: Bot<Context, Api<RawApi>>,
+    bot1: BotContext,
+    bot2: BotContext,
   ) =>
   async () => {
     console.log("Скучно нахуй, надо чета напиздеть");

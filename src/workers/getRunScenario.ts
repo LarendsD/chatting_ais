@@ -1,12 +1,12 @@
-import { Api, Bot, Context, RawApi } from "grammy";
 import { readFileSync } from "fs";
 import { setTimeout } from "timers/promises";
 import { scenarioPath } from "./index.js";
 import Scenario from "./types/scenario.type.js";
+import BotContext from "src/bot/types/BotContext.interface.js";
 
 export default (
-  bot1: Bot<Context, Api<RawApi>>,
-  bot2: Bot<Context, Api<RawApi>>,
+  bot1: BotContext,
+  bot2: BotContext,
 ) =>
   async () => {
     console.log("Job run scenarios start!");

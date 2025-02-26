@@ -1,8 +1,8 @@
-import { Api, Bot, Context, RawApi } from "grammy";
 import getGroupMessaging from "./getGroupMessaging.js";
 import getPrivateMessaging from "./getPrivateMessaging.js";
+import BotContext from "../types/BotContext.interface.js";
 
-export default (bot: Bot<Context, Api<RawApi>>, characterAiChat: any) => {
+export default (bot: BotContext, characterAiChat: any) => {
   bot
     .chatType(["group", "supergroup"])
     .on(["message"], getGroupMessaging(characterAiChat));

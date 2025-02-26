@@ -10,8 +10,9 @@ export default (client: CAINode) =>
     }
 
     const adminId = Number(process.env.TG_ADMIN_ID);
+    const zaharId = Number(process.env.TG_ZAHAR_ID);
 
-    if (ctx.message.from.id !== adminId) {
+    if (![adminId, zaharId].includes(ctx.message.from.id)) {
       return ctx.reply(
         "Пиздец чел ты кто? Не имеешь права новый чат начинать",
         {

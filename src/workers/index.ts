@@ -7,13 +7,14 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { writeFileSync, existsSync } from "fs";
 import getRandomMessageToGroup from "./getRandomMessageToGroup.js";
+import BotContext from "src/bot/types/BotContext.interface.js";
 // import getRandomMessageToGroup from "./getRandomMessageToGroup.js";
 
 export const scenarioPath = join(tmpdir(), "scenario.json");
 
 export default (
-  bot1: Bot<Context, Api<RawApi>>,
-  bot2: Bot<Context, Api<RawApi>>,
+  bot1: BotContext,
+  bot2: BotContext,
   client1: CAINode,
   client2: CAINode,
 ) => {
