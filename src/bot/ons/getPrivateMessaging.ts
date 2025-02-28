@@ -7,7 +7,7 @@ import replyByMessagingMode from "./utils/replyByMessagingType.js";
 export default (client: CAINode) =>
   async (ctx: Filter<Context & SessionFlavor<SessionData>, "message">) => {
     console.log(ctx.message);
-    if (ctx.message.text) {
+    if (ctx.message.text || ctx.message.photo) {
       try {
         // console.log('До');
         // console.log(client.user.info.user.user);
@@ -16,7 +16,7 @@ export default (client: CAINode) =>
         // console.log('После');
         // console.log(client.user.info.user.user)
 
-        return replyByMessagingMode(ctx, client, {text: ctx.message.text});
+        return replyByMessagingMode(ctx, client, {text: ctx.message.text, photo: ctx.message.photo});
       } catch (error) {
         console.error(error);
 

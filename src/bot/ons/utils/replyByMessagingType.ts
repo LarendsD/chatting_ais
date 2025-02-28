@@ -1,8 +1,45 @@
 import { CAINode } from "cainode";
 import { Context, Filter, SessionFlavor } from "grammy";
+import { PhotoSize } from "grammy/types";
 import BotMessagingMode from "src/bot/enums/botMessagingMode.js";
 import SessionData from "src/bot/types/SessionData.interface.js";
 import voiceByBotId from "src/bot/utils/voiceByBotId.js";
+
+const getImageLink = async (
+  ctx: Filter<Context & SessionFlavor<SessionData>, "message">,
+  data: Data
+) => {
+  if (data.photo) {
+    const mostDetailedImage = data.photo.at(-1);
+
+    if (!mostDetailedImage) {
+      return;
+    }
+
+    const {file_path} = await ctx.api.getFile(mostDetailedImage.file_id);
+
+    const zaharBotToken = process.env.ZAHAR_TG_BOT_TOKEN;
+
+    const url = `https://api.telegram.org/file/bot${zaharBotToken}/${file_path}`
+
+    return url;
+  }
+}
+
+const getResponse = async (ctx: Filter<Context & SessionFlavor<SessionData>, "message">, client: CAINode, data: Data) => {
+  const link = await getImageLink(ctx, data);
+
+  return client.character.send_message(
+    data.text, 
+    false, 
+    link, 
+    {
+      timeout_ms: 15000, 
+      char_id: '', 
+      chat_id: '',
+    }
+  )
+}
 
 const getVoiceLink = async (
   botId: number,
@@ -25,11 +62,21 @@ const textReply = async (
   client: CAINode,
   data: Data,
 ) => {
-  const response = await client.character.send_message(data.text);
+  const response = await getResponse(ctx, client, data);
 
   const firstMessage = response.turn.candidates[0].raw_content;
 
   console.log(firstMessage);
+
+  // const link = ctx.api.getFile('');
+
+  // console.log(link);
+
+  /* const image = await client.image.generate_image(firstMessage);
+
+  return ctx.replyWithPhoto(image.image_rel_path, {
+    caption: firstMessage,
+  }) */
 
   return ctx.reply(firstMessage, {
     reply_parameters: { message_id: ctx.message.message_id },
@@ -42,7 +89,7 @@ const voiceReply = async (
   data: Data,
   withText: boolean,
 ) => {
-  const response = await client.character.send_message(data.text);
+  const response = await getResponse(ctx, client, data);
 
   const voiceLink = await getVoiceLink(ctx.me.id, client, response);
 
@@ -57,7 +104,8 @@ const voiceReply = async (
 }
 
 interface Data {
-  text: string,
+  text?: string,
+  photo?: PhotoSize[],
 }
 
 const replyByMessagingMode = (
