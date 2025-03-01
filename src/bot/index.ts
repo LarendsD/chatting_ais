@@ -19,5 +19,15 @@ export default async (bot: BotContext, client: CAINode) => {
     onStart: (botInfo) => console.log(`Bot ${botInfo.username} started!`),
   });
 
-  bot.catch((error) => console.error(error));
+  bot.catch((error) => {
+    console.error(error)
+
+    const {ctx} = error;
+
+    if (ctx.message) {
+      return ctx.reply("Бля залагал чет, повтори плиз!", {
+        reply_parameters: { message_id: ctx.message.message_id },
+      });
+    }
+  });
 };

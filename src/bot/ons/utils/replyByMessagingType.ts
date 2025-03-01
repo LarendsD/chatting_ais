@@ -68,16 +68,6 @@ const textReply = async (
 
   console.log(firstMessage);
 
-  // const link = ctx.api.getFile('');
-
-  // console.log(link);
-
-  /* const image = await client.image.generate_image(firstMessage);
-
-  return ctx.replyWithPhoto(image.image_rel_path, {
-    caption: firstMessage,
-  }) */
-
   return ctx.reply(firstMessage, {
     reply_parameters: { message_id: ctx.message.message_id },
   });
