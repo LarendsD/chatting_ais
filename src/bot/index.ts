@@ -24,10 +24,10 @@ export default async (bot: BotContext, client: CAINode) => {
 
     const {ctx} = error;
 
-    if (ctx.message) {
-      return ctx.reply("Бля залагал чет, повтори плиз!", {
-        reply_parameters: { message_id: ctx.message.message_id },
-      });
-    }
+    return ctx.reply("Бля залагал чет, повтори плиз!", ctx.message ? {
+      reply_parameters: { message_id: ctx.message.message_id },
+    } : {});
+
+
   });
 };
