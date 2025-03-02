@@ -33,7 +33,7 @@ export default (
   // cron.schedule("*/5 * * * *", getRunScenario(bot1, bot2));
 
   cron.schedule(
-    "*/15 * * * *",
+    "*/14 * * * *",
     getRandomMessageToGroup(
       bot2,
       client2,
