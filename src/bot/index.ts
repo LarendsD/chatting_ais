@@ -26,6 +26,6 @@ export default async (bot: BotContext, client: CAINode) => {
 
     return ctx.reply("Бля залагал чет, повтори плиз!", ctx.message ? {
       reply_parameters: { message_id: ctx.message.message_id },
-    } : {});
+    } : {}).catch((error) => console.error(error));
   });
 };
