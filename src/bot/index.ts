@@ -1,15 +1,15 @@
-import { session } from "grammy";
-import initCommands from "./commands/index.js";
-import initOns from "./ons/index.js";
-import {CAINode} from 'cainode';
-import BotMessagingMode from "./enums/botMessagingMode.js";
-import BotContext from "./types/BotContext.interface.js";
-import SessionData from "./types/SessionData.interface.js";
+import { session } from 'grammy';
+import initCommands from './commands/index.js';
+import initOns from './ons/index.js';
+import { CAINode } from 'cainode';
+import BotMessagingMode from './enums/botMessagingMode.js';
+import BotContext from './types/BotContext.interface.js';
+import SessionData from './types/SessionData.interface.js';
 
 export default async (bot: BotContext, client: CAINode) => {
   const initial = (): SessionData => {
     return { messagingMode: BotMessagingMode.TEXT };
-  }
+  };
   bot.use(session({ initial }));
 
   initCommands(bot, client);
@@ -20,12 +20,19 @@ export default async (bot: BotContext, client: CAINode) => {
   });
 
   bot.catch((error) => {
-    console.error(error)
+    console.error(error);
 
-    const {ctx} = error;
+    const { ctx } = error;
 
-    return ctx.reply("Бля залагал чет, повтори плиз!", ctx.message ? {
-      reply_parameters: { message_id: ctx.message.message_id },
-    } : {}).catch((error) => console.error(error));
+    return ctx
+      .reply(
+        'Бля залагал чет, повтори плиз!',
+        ctx.message
+          ? {
+              reply_parameters: { message_id: ctx.message.message_id },
+            }
+          : {},
+      )
+      .catch((error) => console.error(error));
   });
 };

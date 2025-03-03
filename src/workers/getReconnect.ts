@@ -1,9 +1,6 @@
-import { CAINode } from "cainode";
+import { CAINode } from 'cainode';
 
-export default (
-  client1: CAINode,
-  client2: CAINode,
-) => async () => {
+export default (client1: CAINode, client2: CAINode) => async () => {
   console.log('Reconnecting...');
 
   const zaharCharacterAiChatToken = process.env.ZAHAR_CHARACTER_AI_CHAT_TOKEN;
@@ -11,7 +8,11 @@ export default (
 
   const characterAiUserToken = process.env.CHARACTER_AI_USER_TOKEN;
 
-  if (!characterAiUserToken || !zaharCharacterAiChatToken || !timyrCharacterAiChatToken) {
+  if (
+    !characterAiUserToken ||
+    !zaharCharacterAiChatToken ||
+    !timyrCharacterAiChatToken
+  ) {
     throw new Error('character.ai chat tokens not provided!');
   }
 
@@ -25,4 +26,4 @@ export default (
   await client2.character.connect(timyrCharacterAiChatToken);
 
   console.log('Reconnected!');
-}
+};

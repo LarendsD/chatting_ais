@@ -1,6 +1,6 @@
 type Scenario = {
-  text: string,
-  audioLink: string,
-}
+  text: string;
+  audioLink: string;
+};
 
 export default Scenario;

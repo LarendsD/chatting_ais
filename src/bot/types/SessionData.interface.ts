@@ -1,4 +1,4 @@
-import BotMessagingMode from "../enums/botMessagingMode.js";
+import BotMessagingMode from '../enums/botMessagingMode.js';
 
 interface SessionData {
   messagingMode: BotMessagingMode;
