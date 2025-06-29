@@ -1,6 +1,7 @@
 import { session } from 'grammy';
 import initCommands from './commands/index.js';
 import initOns from './ons/index.js';
+import initHears from './hears/index.js';
 import { CAINode } from 'cainode';
 import BotMessagingMode from './enums/botMessagingMode.js';
 import BotContext from './types/BotContext.interface.js';
@@ -12,6 +13,7 @@ export default async (bot: BotContext, client: CAINode) => {
   };
   bot.use(session({ initial }));
 
+  initHears(bot, client);
   initCommands(bot, client);
   initOns(bot, client);
 

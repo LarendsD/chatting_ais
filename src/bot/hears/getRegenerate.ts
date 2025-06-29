@@ -1,0 +1,33 @@
+import { CAINode } from 'cainode';
+import {Context, Filter, HearsContext, SessionFlavor } from 'grammy';
+import replyByMessagingMode, { messagesData } from '../ons/utils/replyByMessagingType.js';
+import editByContent from './utils/replyRegeneratedByContent.js';
+import SessionData from '../types/SessionData.interface.js';
+
+export default (client: CAINode) => async (ctx: HearsContext<Context>) => {
+  console.log(ctx.message);
+
+  if (
+    !ctx.message ||
+    !ctx.message.reply_to_message ||
+    ctx.message.reply_to_message.from?.id !== ctx.me.id
+  ) {
+    return;
+  }
+
+  if (!messagesData.has(ctx.message.reply_to_message.message_id)) {
+    return replyByMessagingMode(
+      ctx as Filter<Context & SessionFlavor<SessionData>, 'message'>, 
+      client, 
+      {
+        text: ctx.message.text!
+      }
+    );
+  }
+
+  const externalMessageId = messagesData.get(ctx.message.reply_to_message.message_id) as string;
+
+  const regenerated = await editByContent(ctx, client, {externalMessageId});
+
+  messagesData.set(regenerated.messageId, regenerated.externalMessageId);
+};

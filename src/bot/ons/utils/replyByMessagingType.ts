@@ -5,6 +5,8 @@ import BotMessagingMode from 'src/bot/enums/botMessagingMode.js';
 import SessionData from 'src/bot/types/SessionData.interface.js';
 import voiceByBotId from 'src/bot/utils/voiceByBotId.js';
 
+export const messagesData = new Map<number, string>();
+
 const getImageLink = async (
   ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>,
   data: Data,
@@ -67,9 +69,14 @@ const textReply = async (
 
   console.log(firstMessage);
 
-  return ctx.reply(firstMessage, {
+  const replied = await ctx.reply(firstMessage, {
     reply_parameters: { message_id: ctx.message.message_id },
   });
+
+  return {
+    messageId: replied.message_id,
+    externalMessageId: response.turn.turn_key.turn_id,
+  }
 };
 
 const voiceReply = async (
@@ -86,10 +93,15 @@ const voiceReply = async (
 
   console.log(firstMessage);
 
-  return ctx.replyWithVoice(voiceLink, {
+  const replied = await ctx.replyWithVoice(voiceLink, {
     reply_parameters: { message_id: ctx.message.message_id },
     caption: withText ? firstMessage : '',
   });
+
+  return {
+    messageId: replied.message_id,
+    externalMessageId: response.turn.turn_key.turn_id,
+  }
 };
 
 interface Data {
@@ -97,11 +109,16 @@ interface Data {
   photo?: PhotoSize[];
 }
 
-const replyByMessagingMode = (
+interface ReplyByMessagingModeResult {
+  messageId: number;
+  externalMessageId: string;
+}
+
+const replyByMessagingMode = async (
   ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>,
   client: CAINode,
   data: Data,
-) => {
+): Promise<ReplyByMessagingModeResult> => {
   const messagingMode = ctx.session.messagingMode;
 
   switch (messagingMode) {

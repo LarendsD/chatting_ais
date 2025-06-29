@@ -7,6 +7,7 @@ import getChangeMode from './getChangeMode..js';
 import BotMessagingMode from '../enums/botMessagingMode.js';
 import getHelp from './getHelp.js';
 import getReconnect from './getReconnect.js';
+import getRegenerate from '../hears/getRegenerate.js';
 
 export default (bot: BotContext, client: CAINode) => {
   bot.command('start', getStart());
@@ -21,6 +22,8 @@ export default (bot: BotContext, client: CAINode) => {
     'voiceAndTextMode',
     getChangeMode(BotMessagingMode.TEXT_AND_VOICE),
   );
+
+  bot.hears(/не/i, getRegenerate(client));
 
   bot.chatType('private').command('help', getHelp());
 };

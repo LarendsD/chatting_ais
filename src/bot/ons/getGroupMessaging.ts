@@ -1,7 +1,7 @@
 import { Context, Filter, SessionFlavor } from 'grammy';
 import { CAINode } from 'cainode';
 import SessionData from '../types/SessionData.interface.js';
-import replyByMessagingMode from './utils/replyByMessagingType.js';
+import replyByMessagingMode, { messagesData } from './utils/replyByMessagingType.js';
 
 export default (client: CAINode) =>
   async (ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>) => {
@@ -15,7 +15,11 @@ export default (client: CAINode) =>
       try {
         const text = ctx.message.text.replace(`@${me.username}`, '');
 
-        return replyByMessagingMode(ctx, client, { text });
+        const replied = await replyByMessagingMode(ctx, client, { text });
+
+        messagesData.set(replied.messageId, replied.externalMessageId);
+
+        return replied;
       } catch (error) {
         console.error(error);
 
