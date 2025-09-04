@@ -6,7 +6,13 @@ const getRegenerated = async (
   client: CAINode,
   data: Data,
 ) => {
-  return client.character.generate_turn_candidate(data.externalMessageId);
+  return new Promise<Awaited<ReturnType<typeof client['character']['generate_turn_candidate']>>>((resolve, reject) => {
+    setTimeout(() => reject('Timeout exceeded'), 15000);
+
+    return client.character.generate_turn_candidate(data.externalMessageId).then((result) => {
+      return resolve(result);
+    });
+  })
 };
 
 const getVoiceLink = async (
