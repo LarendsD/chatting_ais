@@ -2,10 +2,10 @@ import { session } from 'grammy';
 import initCommands from './commands/index.js';
 import initOns from './ons/index.js';
 import initHears from './hears/index.js';
-import { CAINode } from 'cainode';
 import BotMessagingMode from './enums/botMessagingMode.js';
 import BotContext from './types/BotContext.interface.js';
 import SessionData from './types/SessionData.interface.js';
+import CAINode from 'lib/CAIClient/index.js';
 
 export default async (bot: BotContext, client: CAINode) => {
   const initial = (): SessionData => {

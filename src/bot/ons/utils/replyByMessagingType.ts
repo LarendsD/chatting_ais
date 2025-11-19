@@ -1,6 +1,6 @@
-import { CAINode } from 'cainode';
 import { Context, Filter, SessionFlavor } from 'grammy';
 import { PhotoSize } from 'grammy/types';
+import CAINode from 'lib/CAIClient/index.js';
 import BotMessagingMode from 'src/bot/enums/botMessagingMode.js';
 import SessionData from 'src/bot/types/SessionData.interface.js';
 import voiceByBotId from 'src/bot/utils/voiceByBotId.js';
@@ -36,9 +36,7 @@ const getResponse = async (
   const link = await getImageLink(ctx, data);
 
   return client.character.send_message(data.text, false, link, {
-    timeout_ms: 15000,
-    char_id: '',
-    chat_id: '',
+    timeout_ms: 30_000,
   });
 };
 

@@ -1,11 +1,12 @@
-import { CAINode } from 'cainode';
 import {Context, Filter, HearsContext, SessionFlavor } from 'grammy';
 import replyByMessagingMode, { messagesData } from '../ons/utils/replyByMessagingType.js';
 import replyRegeneratedByContent from './utils/replyRegeneratedByContent.js';
 import SessionData from '../types/SessionData.interface.js';
+import CAINode from 'lib/CAIClient/index.js';
 
 export default (client: CAINode) => async (ctx: HearsContext<Context>) => {
   console.log(ctx.message);
+  console.log('РЕГЕНЕРАТЕ');
 
   if (
     !ctx.message ||

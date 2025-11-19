@@ -1,4 +1,4 @@
-import { CAINode } from 'cainode';
+import CAINode from 'lib/CAIClient/index.js';
 import BotContext from 'src/bot/types/BotContext.interface.js';
 
 export default (bot2: BotContext, client2: CAINode) => async () => {

@@ -1,9 +1,9 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { scenarioPath } from './index.js';
-import { CAINode } from 'cainode';
 import Scenario from './types/scenario.type.js';
-import voiceByBotId from 'src/bot/utils/voiceByBotId.js';
+// import voiceByBotId from 'src/bot/utils/voiceByBotId.js';
 import BotContext from 'src/bot/types/BotContext.interface.js';
+import CAINode from 'lib/CAIClient/index.js';
 
 export default (
     bot1: BotContext,
@@ -30,11 +30,11 @@ export default (
 
       const firstResponse1Candidate = response1.turn.candidates[0];
 
-      const tts1 = await client1.character.replay_tts(
+      /* const tts1 = await client1.character.replay_tts(
         response1.turn.turn_key.turn_id,
         firstResponse1Candidate.candidate_id,
         voiceByBotId[bot1.botInfo.id],
-      );
+      ); */
 
       const response2 = await client2.character.send_message(
         firstResponse1Candidate.raw_content,
@@ -42,26 +42,26 @@ export default (
 
       const firstResponse2Candidate = response2.turn.candidates[0];
 
-      const tts2 = await client2.character.replay_tts(
+      /* const tts2 = await client2.character.replay_tts(
         response2.turn.turn_key.turn_id,
         firstResponse2Candidate.candidate_id,
         voiceByBotId[bot2.botInfo.id],
-      );
+      ); */
 
       lastMessage = firstResponse2Candidate.raw_content;
       lastResponse = {
         text: firstResponse2Candidate.raw_content,
-        audioLink: tts2.replayUrl,
+        // audioLink: tts2.replayUrl,
       };
 
       newScenario.push(
         {
           text: firstResponse1Candidate.raw_content,
-          audioLink: tts1.replayUrl,
+          // audioLink: tts1.replayUrl,
         },
         {
           text: firstResponse2Candidate.raw_content,
-          audioLink: tts2.replayUrl,
+          // audioLink: tts2.replayUrl,
         },
       );
     }

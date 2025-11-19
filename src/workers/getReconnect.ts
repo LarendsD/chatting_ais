@@ -1,4 +1,4 @@
-import { CAINode } from 'cainode';
+import CAINode from 'lib/CAIClient/index.js';
 
 export default (client1: CAINode, client2: CAINode) => async () => {
   console.log('Reconnecting...');

@@ -28,8 +28,8 @@ interface TgMessages {
 const mapping: {
   [key: string]: string;
 } = {
-  user1988339284: '{{user}}',
-  user1881370456: '{{char}}',
+  user1988339284: '{{char}}',
+  user1881370456: '{{user}}',
 };
 
 const run = () => {

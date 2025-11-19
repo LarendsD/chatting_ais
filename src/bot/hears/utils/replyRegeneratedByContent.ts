@@ -1,5 +1,5 @@
-import { CAINode } from 'cainode';
 import { Context, HearsContext } from 'grammy';
+import CAINode from 'lib/CAIClient/index.js';
 import voiceByBotId from 'src/bot/utils/voiceByBotId.js';
 
 const getRegenerated = async (

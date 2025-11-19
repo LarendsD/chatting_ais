@@ -1,7 +1,7 @@
 import { Context, CommandContext } from 'grammy';
-import { CAINode } from 'cainode';
 import { writeFileSync } from 'fs';
 import { scenarioPath } from '../../workers/index.js';
+import CAINode from 'lib/CAIClient/index.js';
 
 export default (client: CAINode) => async (ctx: CommandContext<Context>) => {
   if (!ctx.message) {

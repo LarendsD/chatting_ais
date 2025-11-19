@@ -15,18 +15,16 @@ export default (bot1: BotContext, bot2: BotContext) => async () => {
 
     await setTimeout(10000);
 
-    await bot1.api.sendAudio(
+    await bot1.api.sendMessage(
       Number(process.env.WORKER_RUN_GROUP_ID),
-      question.audioLink,
-      { caption: question.text },
+      question.text,
     );
 
     await setTimeout(10000);
 
-    await bot2.api.sendAudio(
+    await bot2.api.sendMessage(
       Number(process.env.WORKER_RUN_GROUP_ID),
-      answer.audioLink,
-      { caption: answer.text },
+      answer.text,
     );
   }
 

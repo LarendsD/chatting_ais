@@ -1,12 +1,12 @@
 import { Context, Filter, SessionFlavor } from 'grammy';
-import { CAINode } from 'cainode';
 import SessionData from '../types/SessionData.interface.js';
 import replyByMessagingMode, { messagesData } from './utils/replyByMessagingType.js';
+import CAINode from 'lib/CAIClient/index.js';
 
 export default (client: CAINode) =>
   async (ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>) => {
     console.log(ctx.message);
-    if (ctx.message.text || ctx.message.photo) {
+    if ((ctx.message.text || ctx.message.caption) || ctx.message.photo) {
       try {
         // console.log('До');
         // console.log(client.user.info.user.user);
@@ -16,7 +16,7 @@ export default (client: CAINode) =>
         // console.log(client.user.info.user.user)
 
         const replied = await replyByMessagingMode(ctx, client, {
-          text: ctx.message.text,
+          text: ctx.message.text ?? ctx.message.caption,
           photo: ctx.message.photo,
         });
 

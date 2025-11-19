@@ -1,13 +1,12 @@
 import getClear from './getClear.js';
 import getStart from './getStart.js';
 import getNew from './getNew.js';
-import { CAINode } from 'cainode';
 import BotContext from '../types/BotContext.interface.js';
 import getChangeMode from './getChangeMode..js';
 import BotMessagingMode from '../enums/botMessagingMode.js';
 import getHelp from './getHelp.js';
 import getReconnect from './getReconnect.js';
-import getRegenerate from '../hears/getRegenerate.js';
+import CAINode from 'lib/CAIClient/index.js';
 
 export default (bot: BotContext, client: CAINode) => {
   bot.command('start', getStart());
@@ -22,8 +21,6 @@ export default (bot: BotContext, client: CAINode) => {
     'voiceAndTextMode',
     getChangeMode(BotMessagingMode.TEXT_AND_VOICE),
   );
-
-  bot.hears(/не/i, getRegenerate(client));
 
   bot.chatType('private').command('help', getHelp());
 };

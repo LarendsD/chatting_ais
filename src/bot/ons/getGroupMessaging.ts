@@ -1,21 +1,31 @@
 import { Context, Filter, SessionFlavor } from 'grammy';
-import { CAINode } from 'cainode';
 import SessionData from '../types/SessionData.interface.js';
 import replyByMessagingMode, { messagesData } from './utils/replyByMessagingType.js';
+import CAINode from 'lib/CAIClient/index.js';
 
 export default (client: CAINode) =>
   async (ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>) => {
     console.log(ctx.message);
     const me = await ctx.api.getMe();
     if (
-      ctx.message.text &&
-      (ctx.message.text.includes(`@${me.username}`) ||
-        ctx.message.reply_to_message?.from?.username === me.username)
+      (
+        ctx.message.text?.includes(`@${me.username}`) ||
+        (
+          ctx.message.caption?.includes(`@${me.username}`) &&
+          ctx.message.photo
+        )
+      ) ||
+        ctx.message.reply_to_message?.from?.username === me.username
     ) {
       try {
-        const text = ctx.message.text.replace(`@${me.username}`, '');
+        const rawText = ctx.message.text ?? ctx.message.caption;
 
-        const replied = await replyByMessagingMode(ctx, client, { text });
+        const text = rawText?.replace(`@${me.username}`, '');
+
+        const replied = await replyByMessagingMode(ctx, client, { 
+          text,
+          photo: ctx.message.photo,
+         });
 
         messagesData.set(replied.messageId, replied.externalMessageId);
 

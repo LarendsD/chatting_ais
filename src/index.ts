@@ -1,10 +1,9 @@
 import { Bot } from 'grammy';
-// import {CAINode} from 'cainode';
-import { CAINode } from 'cainode';
 import runWorkers from './workers/index.js';
 import runBot from './bot/index.js';
 import { config } from 'dotenv';
 import BotContext from './bot/types/BotContext.interface.js';
+import CAINode from 'lib/CAIClient/index.js';
 
 config();
 

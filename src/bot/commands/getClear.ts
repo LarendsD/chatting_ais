@@ -1,7 +1,7 @@
 import { Context, CommandContext } from 'grammy';
-import { CAINode } from 'cainode';
 import { writeFileSync } from 'fs';
 import { scenarioPath } from '../../workers/index.js';
+import CAINode from 'lib/CAIClient/index.js';
 
 const deleteMessages = async (client: CAINode, nextToken?: string) => {
   const { meta, turns } = await client.chat.history_chat_turns(
@@ -11,12 +11,7 @@ const deleteMessages = async (client: CAINode, nextToken?: string) => {
 
   console.log(`Messages to delete: ${turns.length}`);
 
-  for (const turn of turns) {
-    console.log(`Message id: ${turn.turn_key.turn_id}`);
-    await client.character.delete_message(turn.turn_key.turn_id);
-  }
-
-  // await Promise.all(turns.map((turn) => client.character.delete_message(turn.turn_key.turn_id)));
+  await client.character.delete_message(turns.map((turn) => turn.turn_key.turn_id));
 
   if (turns.length >= 50) {
     await deleteMessages(client, meta.next_token);
