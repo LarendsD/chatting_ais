@@ -22,8 +22,8 @@ export default (client1: CAINode, client2: CAINode) => async () => {
   await client1.login(characterAiUserToken);
   await client2.login(characterAiUserToken);
 
-  await client1.character.connect(zaharCharacterAiChatToken);
-  await client2.character.connect(timyrCharacterAiChatToken);
+  await client1.character.connect(timyrCharacterAiChatToken);
+  await client2.character.connect(zaharCharacterAiChatToken);
 
   console.log('Reconnected!');
 };
