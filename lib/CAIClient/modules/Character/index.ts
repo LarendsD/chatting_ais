@@ -9,9 +9,9 @@ import generateRandomUUID from 'lib/CAIClient/utils/generateRandomUUID.js';
 import axios from 'axios';
 import Command from '../WebSocket/enums/Command.enum.js';
 import ChatType from '../WebSocket/enums/ChatType.enum.js';
-import ChatModel from '../WebSocket/enums/ChatModel.enum.js';
 import ChatVisibility from '../WebSocket/enums/ChatVisibility.enum.js';
 import AttachmentType from '../WebSocket/enums/AttachmentType.js';
+import ConversationInfo from '../Chat/types/ConversationInfo.type.js';
 
 class Character {
   private prop: ClientProps
@@ -183,7 +183,7 @@ class Character {
         payload: {
           chat_type: ChatType.OneToOne,
           chat: {
-            preferred_model_type: ChatModel.DeepSynth,
+            preferred_model_type: this.prop.chat_model,
             chat_id: this.prop.current_chat_id,
             creator_id: `${this.prop.user_data!.user.user.id}`,
             visibility: ChatVisibility.Private,
@@ -200,6 +200,12 @@ class Character {
 
     const mostRecentChat = data.chats[0];
 
+    const chatResponse = await this.prop.httpCAINeoInstance.get<ConversationInfo>(`/chat/${mostRecentChat.chat_id}`, {
+      headers: {
+        Authorization: `Token ${this.prop.token}`
+      }
+    })
+
     await this.prop.httpCAINeoInstance.get(`/chat/${mostRecentChat.chat_id}/resurrect`, {
       headers: {
         Authorization: `Token ${this.prop.token}`
@@ -208,7 +214,8 @@ class Character {
 
     this.prop.current_chat_id = mostRecentChat.chat_id
     this.prop.join_type = JoinType.PRIVATE;
-    this.prop.current_char_id_chat = char_id
+    this.prop.current_char_id_chat = char_id;
+    this.prop.chat_model = chatResponse.data.chat.preferred_model_type;
 
     return data;
   }
@@ -516,7 +523,7 @@ class Character {
           visibility: ChatVisibility.Private,
           character_id: opts.char_id,
           type: ChatType.OneToOne,
-          preferred_model_type: ChatModel.DeepSynth,
+          preferred_model_type: this.prop.chat_model,
         },
         with_greeting: with_greeting
       },
@@ -526,6 +533,8 @@ class Character {
     if (this.prop.join_type === JoinType.PRIVATE) {
       this.prop.current_chat_id = result.chat.chat_id;
     }
+
+    this.prop.chat_model = result.chat.preferred_model_type;
 
     return result
   }

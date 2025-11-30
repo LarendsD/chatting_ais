@@ -14,6 +14,7 @@ import Chat from './modules/Chat/index.js';
 import JoinType from './enums/JoinType.enum.js';
 import UserInfo from './modules/User/types/UserInfo.type.js';
 import { WebSocketClient } from './modules/WebSocket/index.js';
+import ChatModel from './modules/WebSocket/enums/ChatModel.enum.js';
 
 const initialProp: ClientProp = {
   ws: [],
@@ -23,6 +24,7 @@ const initialProp: ClientProp = {
   current_char_id_chat: '',
   edge_rollout: '',
   user_settings: null,
+  chat_model: ChatModel.Balanced,
   join_type: JoinType.NONE,
   is_connected_livekit_room: [0],
   httpCAIInstance: axios.create({
