@@ -10,7 +10,6 @@ interface SingleCharacterChatInfo {
     author: {
       author_id: string;
       name: string;
-      is_human: boolean;
     };
     candidates: Array<{
       candidate_id: string;

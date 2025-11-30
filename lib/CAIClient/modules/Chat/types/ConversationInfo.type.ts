@@ -1,3 +1,5 @@
+import ChatModel from '../../WebSocket/enums/ChatModel.enum.js';
+
 interface ConversationInfo {
   chat: {
     chat_id: string;
@@ -7,6 +9,7 @@ interface ConversationInfo {
     state: string;
     type: string;
     visibility: string;
+    preferred_model_type: ChatModel,
   };
 }
 

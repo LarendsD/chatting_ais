@@ -1,5 +1,4 @@
 import axios from 'axios';
-import WebSocket from 'ws';
 import EventEmitter from 'node:events';
 import ClientProp from './types/ClientProps.type.js';
 import Search from './modules/Search/index.js';
@@ -14,116 +13,7 @@ import Voice from './modules/Voice/index.js';
 import Chat from './modules/Chat/index.js';
 import JoinType from './enums/JoinType.enum.js';
 import UserInfo from './modules/User/types/UserInfo.type.js';
-import PinMessageInfo from './modules/Chat/types/PinMessageInfo.type.js';
-import GroupChatInfo from './modules/GroupChat/types/GroupChatInfo.type.js';
-
-/* async function https_fetch(url: string | URL | Request, method: string | undefined, headers = {}, body_data = '') {
-    if (body_data) headers['Content-Length'] = body_data.length
-    return await fetch(url, {
-        method: method,
-        headers: {
-            'User-Agent': 'Character.AI',
-            'DNT': '1',
-            'Sec-GPC': '1',
-            'Connection': 'close',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'none',
-            'Sec-Fetch-User': '?1',
-            'TE': 'trailers',
-            ...headers
-        },
-        body: body_data ? body_data : undefined
-    })
-} */
-
-function send_ws<T = unknown>(
-  ws_con: WebSocket,
-  data: unknown,
-  using_json: boolean,
-  wait_json_prop_type: JoinType,
-  wait_ai_response: boolean,
-  append_array = false,
-  timeout_ms = 0,
-): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const temp_res: unknown[] = []
-
-    let inc;
-    let timeout: NodeJS.Timeout;
-    ws_con.on('message', inc = function incoming(message: PinMessageInfo | GroupChatInfo) {
-      message = using_json ? JSON.parse(message.toString()) : message.toString()
-      if (using_json && wait_json_prop_type) {
-        try {
-          switch (Number(wait_json_prop_type)) {
-            case JoinType.PRIVATE: {
-              const privateMessage = message as PinMessageInfo;
-
-              const resolveCondition = wait_ai_response ? 
-                !privateMessage.turn.author.is_human && privateMessage.turn.candidates[0].is_final :
-                privateMessage.turn.candidates[0].is_final
-
-              if (resolveCondition) {
-                  if (timeout_ms != 0) {
-                    clearTimeout(timeout)
-                  };
-
-                  ws_con.removeListener('message', incoming);
-
-                  if (append_array) {
-                    resolve(temp_res.concat(privateMessage) as T);
-                  } else {
-                    resolve(privateMessage as T);
-                  };
-                }
-                break;
-            }
-            case JoinType.GROUP: {
-              const groupMessage = message as GroupChatInfo;
-
-              const resolveCondition = wait_ai_response ? 
-                !groupMessage.push.pub.data.turn.author.is_human && groupMessage.push.pub.data.turn.candidates[0].is_final :
-                groupMessage.push.pub.data.turn.candidates[0].is_final
-
-              if (resolveCondition) {
-                  if (timeout_ms != 0) {
-                    clearTimeout(timeout);
-                  };
-
-                  ws_con.removeListener('message', incoming);
-      
-                  if (append_array) {
-                    resolve(temp_res.concat(groupMessage) as T);
-                  } else {
-                    resolve(message as T);
-                  };
-                }
-                break;
-            }
-          }
-        } catch (_) {
-          if (append_array) {
-            temp_res.push(message)
-          };
-        }
-      } else {
-        if (timeout_ms != 0) {
-          clearTimeout(timeout);
-        };
-
-        ws_con.removeListener('message', incoming);
-        resolve(message as T)
-      }
-    })
-
-    ws_con.send(data)
-    if (timeout_ms != 0) timeout = setTimeout(() => {
-      ws_con.removeListener('message', inc);
-      reject('Timeout exceeded!')
-    }, timeout_ms)
-  })
-}
+import { WebSocketClient } from './modules/WebSocket/index.js';
 
 const initialProp: ClientProp = {
   ws: [],
@@ -144,7 +34,6 @@ const initialProp: ClientProp = {
   httpCAIPlusInstance: axios.create({
     baseURL: 'https://plus.character.ai',
   }),
-  sendWs: send_ws,
 }
 
 class CAINode extends EventEmitter {
@@ -370,31 +259,17 @@ class CAINode extends EventEmitter {
       { url: 'wss://neo.character.ai/ws/', cookies, userId: 0, instance: this },
     ]
 
-    return Promise.all(connections.map(({ url, cookies, userId, instance }) => {
-      return new Promise((resolve) => {
-        const ws_con = new WebSocket(url, [], {
-          headers: {
-            Cookie: cookies,
-          },
-        })
+    const clients = [];
 
-        ws_con.once('open', () => {
-          if (userId) {
-            ws_con.send(`{"connect":{"name":"js"},"id":1}{"subscribe":{"channel":"user#${userId}"},"id":1}`)
-          }
-          resolve(ws_con)
-        })
-        ws_con.on('message', (message) => {
-          message = message.toString()
+    for (const connection of connections) {
+      const client = new WebSocketClient();
 
-          if (message === '{}') {
-            ws_con.send('{}') // Ping
-          } else {
-            instance.emit('message', message)
-          }
-        });
-      })
-    })) as Promise<WebSocket[]>;
+      client.connect(connection.url, connection.cookies)
+
+      clients.push(client);
+    }
+
+    return clients;
   }
 
   /**
@@ -456,8 +331,8 @@ class CAINode extends EventEmitter {
       }
     });
 
-    await this.prop.ws[0].close()
-    await this.prop.ws[1].close()
+    this.prop.ws[0].close()
+    this.prop.ws[1].close()
     this.prop.ws = []
     this.prop.token = ''
     this.prop.user_data = null;

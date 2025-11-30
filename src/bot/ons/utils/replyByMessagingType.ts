@@ -35,7 +35,7 @@ const getResponse = async (
 ) => {
   const link = await getImageLink(ctx, data);
 
-  return client.character.send_message(data.text, false, link, {
+  return client.character.send_message(data.text, link, {
     timeout_ms: 30_000,
   });
 };

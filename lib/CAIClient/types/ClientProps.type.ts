@@ -1,11 +1,11 @@
-import WebSocket from 'ws';
 import { AxiosInstance } from 'axios';
 import JoinType from '../enums/JoinType.enum.js';
 import UserInfo from '../modules/User/types/UserInfo.type.js';
 import UserSettings from '../modules/User/types/UserSettings.type.js';
+import { WebSocketClient } from '../modules/WebSocket/index.js';
 
 type ClientProps = {
-  ws: WebSocket[];
+  ws: WebSocketClient[];
   token: string;
   user_data: UserInfo | null;
   current_chat_id: string;
@@ -17,15 +17,6 @@ type ClientProps = {
   httpCAIInstance: AxiosInstance;
   httpCAIPlusInstance: AxiosInstance;
   httpCAINeoInstance: AxiosInstance;
-  sendWs: <T = unknown>(
-    ws_con: WebSocket,
-    data: unknown,
-    using_json: boolean,
-    wait_json_prop_type: JoinType,
-    wait_ai_response: boolean,
-    append_array?: boolean,
-    timeout_ms?: number,
-  ) => Promise<T>;
 }
 
 export default ClientProps;

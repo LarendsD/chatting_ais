@@ -2,15 +2,20 @@ import FormData from 'form-data';
 import ClientProps from 'lib/CAIClient/types/ClientProps.type.js';
 import CharacterInformation from './types/CharacterInformation.type.js';
 import CharacterRecentList from './types/CharacterRecentList.type.js';
-import SingleCharacterChatInfo from './types/SingleCharacterChatInfo.type.js';
 import JoinType from 'lib/CAIClient/enums/JoinType.enum.js';
 import CharacterAbout from './types/CharacterAbout.type.js';
 import CharacterDetailedInfo from './types/CharacterDetailedInfo.type.js';
 import generateRandomUUID from 'lib/CAIClient/utils/generateRandomUUID.js';
 import axios from 'axios';
+import Command from '../WebSocket/enums/Command.enum.js';
+import ChatType from '../WebSocket/enums/ChatType.enum.js';
+import ChatModel from '../WebSocket/enums/ChatModel.enum.js';
+import ChatVisibility from '../WebSocket/enums/ChatVisibility.enum.js';
+import AttachmentType from '../WebSocket/enums/AttachmentType.js';
 
 class Character {
-  private prop: ClientProps;
+  private prop: ClientProps
+
   constructor(prop: ClientProps) {
     this.prop = prop
   }
@@ -172,20 +177,23 @@ class Character {
     let data = await this.getRecentChats(char_id);
 
     if (!data.chats.length) {
-      await this.prop.sendWs(this.prop.ws[1], JSON.stringify({
-        command: 'create_chat',
+      await this.prop.ws[1].send({
+        command: Command.CreateChat,
         request_id: generateRandomUUID().slice(0, -12) + char_id.slice(char_id.length - 12),
         payload: {
+          chat_type: ChatType.OneToOne,
           chat: {
+            preferred_model_type: ChatModel.DeepSynth,
             chat_id: this.prop.current_chat_id,
             creator_id: `${this.prop.user_data!.user.user.id}`,
-            visibility: 'VISIBILITY_PRIVATE',
+            visibility: ChatVisibility.Private,
             character_id: char_id,
-            type: 'TYPE_ONE_ON_ONE'
+            type: ChatType.OneToOne,
           },
           with_greeting: is_greeting
-        }
-      }), true, 1, false, true)
+        },
+        origin_id: 'web-next',
+      })
 
       data = await this.getRecentChats(char_id);
     }
@@ -289,14 +297,13 @@ class Character {
   */
   async send_message(
     message = '', 
-    manual_turn = false, 
     image_url_path = '', 
     manual_opt: {
       char_id?: string;
       chat_id?: string;
       timeout_ms?: number;
     } = this.defaultOptsOnSend
-  ): Promise<SingleCharacterChatInfo> {
+  ) {
     if (!this.prop.token) {
       throw 'Please login first.';
     };
@@ -324,66 +331,68 @@ class Character {
       const { value } = await this.uploadPrivateImage(image_url_path);
 
       attachments.push({
-        type: 'TYPE_IMAGE',
+        type: AttachmentType.Image,
         url: value,
       })
     }
 
     const turn_key = this.prop.join_type ? generateRandomUUID() : '';
 
-    return this.prop.sendWs(this.prop.ws[1], JSON.stringify({
-      'command': manual_turn ? 'create_turn' : 'create_and_generate_turn',
-      'request_id': generateRandomUUID().slice(0, -12) + this.prop.current_char_id_chat.slice(this.prop.current_char_id_chat.length - 12),
-      'payload': {
-        'num_candidates': 1,
-        'tts_enabled': true,
-        'selected_language': '',
-        'character_id': opts.char_id,
-        'user_name': this.prop.user_data!.user.user.username,
-        'turn': {
-          'turn_key': {
-            'turn_id': turn_key,
-            'chat_id': opts.chat_id
+    return this.prop.ws[1].send({
+      command: Command.CreateAndGenerateTurn,
+      request_id: generateRandomUUID().slice(0, -12) + this.prop.current_char_id_chat.slice(this.prop.current_char_id_chat.length - 12),
+      payload: {
+        chat_type: ChatType.OneToOne,
+        num_candidates: 1,
+        tts_enabled: true,
+        selected_language: '',
+        character_id: opts.char_id,
+        user_name: this.prop.user_data!.user.user.username,
+        turn: {
+          turn_key: {
+            turn_id: turn_key,
+            chat_id: opts.chat_id
           },
-          'author': {
-            'author_id': `${this.prop.user_data!.user.user.id}`,
-            'is_human': true,
-            'name': this.prop.user_data!.user.user.username
+          author: {
+            author_id: this.prop.user_data!.user.user.id.toString(),
+            is_human: true,
+            name: this.prop.user_data!.user.user.username
           },
-          'candidates': [{
-            'candidate_id': turn_key,
-            'raw_content': message,
+          candidates: [{
+            candidate_id: turn_key,
+            raw_content: message,
           }],
-          'primary_candidate_id': turn_key
+          primary_candidate_id: turn_key
         },
+        generate_comparison: false, // Чета перегенеривает каждый раз сообщение но нахуя
         attachments,
-        'previous_annotations': {
-          'boring': 0,
-          'not_boring': 0,
-          'inaccurate': 0,
-          'not_inaccurate': 0,
-          'repetitive': 0,
-          'not_repetitive': 0,
-          'out_of_character': 0,
-          'not_out_of_character': 0,
-          'bad_memory': 0,
-          'not_bad_memory': 0,
-          'long': 0,
-          'not_long': 0,
-          'short': 0,
-          'not_short': 0,
-          'ends_chat_early': 0,
-          'not_ends_chat_early': 0,
-          'funny': 0,
-          'not_funny': 0,
-          'interesting': 0,
-          'not_interesting': 0,
-          'helpful': 0,
-          'not_helpful': 0
+        previous_annotations: {
+          boring: 0,
+          not_boring: 0,
+          inaccurate: 0,
+          not_inaccurate: 0,
+          repetitive: 0,
+          not_repetitive: 0,
+          out_of_character: 0,
+          not_out_of_character: 0,
+          bad_memory: 0,
+          not_bad_memory: 0,
+          long: 0,
+          not_long: 0,
+          short: 0,
+          not_short: 0,
+          ends_chat_early: 0,
+          not_ends_chat_early: 0,
+          funny: 0,
+          not_funny: 0,
+          interesting: 0,
+          not_interesting: 0,
+          helpful: 0,
+          not_helpful: 0
         }
       },
-      'origin_id': 'Android'
-    }), true, Number(!manual_turn), !manual_turn, false, opts.timeout_ms)
+      origin_id: 'web-next',
+    })
   }
 
   /**
@@ -392,28 +401,24 @@ class Character {
    *   
    * Example: `await library_name.character.generate_turn()`
   */
-  async generate_turn(manual_opt: {
+  /* async generate_turn(manual_opt: {
     char_id?: string;
     chat_id?: string;
     timeout_ms?: number;
-  } = this.defaultOptsOnSend): Promise<SingleCharacterChatInfo> {
-    return await this.send_message('', false, '', manual_opt);
-  }
+  } = this.defaultOptsOnSend) {
+    return await this.send_message('', '', manual_opt);
+  } */
 
   /**
    * Regenerate character message.  
    *   
    * Example: `await library_name.character.generate_turn_candidate("Turn ID")`
-   * 
-   * @param {string} turn_id
-   * @param {{char_id: string, chat_id: string} | undefined} manual_opt
-   * @returns {Promise<SingleCharacterChatInfo>}
   */
   async generate_turn_candidate(turn_id: string, manual_opt: {
     char_id?: string;
     chat_id?: string;
     timeout_ms?: number;
-  } = this.defaultOptsOnSend): Promise<SingleCharacterChatInfo> {
+  } = this.defaultOptsOnSend) {
     if (!this.prop.token) {
       throw 'Please login first.';
     };
@@ -435,45 +440,46 @@ class Character {
       manual_opt.timeout_ms = 0;
     }
 
-    return await this.prop.sendWs(this.prop.ws[1], JSON.stringify({
-      'command': 'generate_turn_candidate',
-      'request_id': generateRandomUUID().slice(0, -12) + this.prop.current_char_id_chat.slice(this.prop.current_char_id_chat.length - 12),
-      'payload': {
-        'tts_enabled': this.prop.is_connected_livekit_room[0] ? true : false,
-        'selected_language': '',
-        'character_id': manual_opt.char_id,
-        'user_name': this.prop.user_data!.user.user.username,
-        'turn_key': {
-          'turn_id': turn_id,
-          'chat_id': manual_opt.chat_id
+    return await this.prop.ws[1].send({
+      command: Command.GenerateTurn,
+      request_id: generateRandomUUID().slice(0, -12) + this.prop.current_char_id_chat.slice(this.prop.current_char_id_chat.length - 12),
+      payload: {
+        tts_enabled: this.prop.is_connected_livekit_room[0] ? true : false,
+        selected_language: '',
+        character_id: opts.char_id,
+        user_name: this.prop.user_data!.user.user.username,
+        turn_key: {
+          turn_id: turn_id,
+          chat_id: opts.chat_id
         },
-        'previous_annotations': {
-          'boring': 0,
-          'not_boring': 0,
-          'inaccurate': 0,
-          'not_inaccurate': 0,
-          'repetitive': 0,
-          'not_repetitive': 0,
-          'out_of_character': 0,
-          'not_out_of_character': 0,
-          'bad_memory': 0,
-          'not_bad_memory': 0,
-          'long': 0,
-          'not_long': 0,
-          'short': 0,
-          'not_short': 0,
-          'ends_chat_early': 0,
-          'not_ends_chat_early': 0,
-          'funny': 0,
-          'not_funny': 0,
-          'interesting': 0,
-          'not_interesting': 0,
-          'helpful': 0,
-          'not_helpful': 0
+        chat_type: ChatType.OneToOne,
+        previous_annotations: {
+          boring: 0,
+          not_boring: 0,
+          inaccurate: 0,
+          not_inaccurate: 0,
+          repetitive: 0,
+          not_repetitive: 0,
+          out_of_character: 0,
+          not_out_of_character: 0,
+          bad_memory: 0,
+          not_bad_memory: 0,
+          long: 0,
+          not_long: 0,
+          short: 0,
+          not_short: 0,
+          ends_chat_early: 0,
+          not_ends_chat_early: 0,
+          funny: 0,
+          not_funny: 0,
+          interesting: 0,
+          not_interesting: 0,
+          helpful: 0,
+          not_helpful: 0
         }
       },
-      'origin_id': 'Android'
-    }), true, 1, true)
+      origin_id: 'web-next',
+    });
   }
 
   /**
@@ -485,7 +491,7 @@ class Character {
   */
   async create_new_conversation(with_greeting = true, manual_opt?: {
     char_id: string;
-  }): Promise<SingleCharacterChatInfo> {
+  }) {
     if (!this.prop.token) {
       throw 'Please login first.';
     }
@@ -499,24 +505,26 @@ class Character {
       throw 'Character ID cannot be empty! please input Character ID correctly, or connect to the character by using character.connect() function.'
     }
 
-    const result = await this.prop.sendWs<SingleCharacterChatInfo>(this.prop.ws[1], JSON.stringify({
-      'command': 'create_chat',
-      'request_id': generateRandomUUID().slice(0, -12) + opts.char_id.slice(opts.char_id.length - 12),
-      'payload': {
-        'chat': {
-          'chat_id': generateRandomUUID(),
-          'creator_id': `${this.prop.user_data!.user.user.id}`,
-          'visibility': 'VISIBILITY_PRIVATE',
-          'character_id': opts.char_id,
-          'type': 'TYPE_ONE_ON_ONE'
+    const result = await this.prop.ws[1].send({
+      command: Command.CreateChat,
+      request_id: generateRandomUUID().slice(0, -12) + opts.char_id.slice(opts.char_id.length - 12),
+      payload: {
+        chat_type: ChatType.OneToOne,
+        chat: {
+          chat_id: generateRandomUUID(),
+          creator_id: `${this.prop.user_data!.user.user.id}`,
+          visibility: ChatVisibility.Private,
+          character_id: opts.char_id,
+          type: ChatType.OneToOne,
+          preferred_model_type: ChatModel.DeepSynth,
         },
-        'with_greeting': with_greeting
+        with_greeting: with_greeting
       },
-      'origin_id': 'Android'
-    }), true, this.prop.join_type, with_greeting, false)
+      origin_id: 'web-next'
+    })
 
     if (this.prop.join_type === JoinType.PRIVATE) {
-      this.prop.current_chat_id = result.turn.turn_key.chat_id;
+      this.prop.current_chat_id = result.chat.chat_id;
     }
 
     return result
@@ -548,15 +556,13 @@ class Character {
       throw 'Chat ID cannot be empty! please input Chat ID correctly, or connect to the character by using character.connect() function.'
     }
 
-    await this.prop.sendWs(this.prop.ws[1], JSON.stringify({
-      'command': 'remove_turns',
-      'request_id': generateRandomUUID().slice(0, -12) + opts.char_id.slice(opts.char_id.length - 12),
-      'payload': {
-        'chat_id': opts.chat_id,
-        'turn_ids': Array.isArray(turn_id) ? turn_id : [turn_id]
-      },
-      'origin_id': 'Android'
-    }), false, 0, false)
+    await this.prop.httpCAINeoInstance.post(`/turns/${opts.chat_id}/remove`, {
+      turn_ids: Array.isArray(turn_id) ? turn_id : [turn_id],
+    }, {
+      headers: {
+        Authorization: `Token ${this.prop.token}`
+      }
+    })
 
     return true;
   }
@@ -569,7 +575,7 @@ class Character {
   async edit_message(candidate_id: string, turn_id: string, new_message: string, manual_opt?: {
     chat_id?: string,
     char_id?: string;
-  }): Promise<SingleCharacterChatInfo> {
+  }) {
     if (!this.prop.token) {
       throw 'Please login first.';
     }
@@ -588,32 +594,37 @@ class Character {
       throw 'Chat ID cannot be empty! please input Chat ID correctly, or connect to the character by using character.connect() function.'
     }
 
-    const result = await this.prop.sendWs<SingleCharacterChatInfo>(this.prop.ws[1], JSON.stringify({
-      'command': 'edit_turn_candidate',
-      'request_id': generateRandomUUID().slice(0, -12) + opts.char_id.slice(opts.char_id.length - 12),
-      'payload': {
-        'turn_key': {
-          'chat_id': opts.chat_id,
-          'turn_id': turn_id
+    const requestId = generateRandomUUID().slice(0, -12) + opts.char_id.slice(opts.char_id.length - 12);
+
+    const result = await this.prop.ws[1].send({
+      command: Command.EditTurn,
+      request_id: requestId,
+      payload: {
+        chat_type: ChatType.OneToOne,
+        turn_key: {
+          chat_id: opts.chat_id,
+          turn_id: turn_id
         },
-        'current_candidate_id': candidate_id,
-        'new_candidate_raw_content': new_message
+        current_candidate_id: candidate_id,
+        new_candidate_raw_content: new_message
       },
-      'origin_id': 'Android'
-    }), true, 1, false)
+      origin_id: 'web-next',
+    })
 
     if (!result.turn.author.is_human) {
-      await this.prop.sendWs(this.prop.ws[1], JSON.stringify({
-        'command': 'update_primary_candidate',
-        'payload': {
-          'candidate_id': candidate_id,
-          'turn_key': {
-            'chat_id': opts.chat_id,
-            'turn_id': turn_id
+      await this.prop.ws[1].send({
+        command: Command.UpdatePrimary,
+        request_id: requestId,
+        payload: {
+          chat_type: ChatType.OneToOne,
+          candidate_id,
+          turn_key: {
+            chat_id: opts.chat_id,
+            turn_id,
           }
         },
-        'origin_id': 'Android'
-      }), false, 0, false)
+        origin_id: 'web-next',
+      })
     }
 
     return result;
@@ -647,12 +658,14 @@ class Character {
       turnId: turn_id,
       candidateId: candidate_id,
       ...(using_voice_query ? {
-        voiceId: '',
         voiceQuery: voice_id_or_query
       } : {
-        voiceId: voice_id_or_query,
-        voiceQuery: ''
+        voiceId: voice_id_or_query
       }),
+    }, {
+      headers: {
+        Authorization: `Token ${this.prop.token}`
+      }
     })
 
     return response.data;

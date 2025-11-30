@@ -22,7 +22,7 @@ export default (
   }
 
   // Run building scenario
-   cron.schedule(
+  cron.schedule(
     '*/5 * * * *',
     getBuildScenario(bot1, bot2, client1, client2),
     {
@@ -37,7 +37,7 @@ export default (
     runOnInit: true,
   });
 
-  cron.schedule('*/30 * * * *', getReconnect(client1, client2));
+  // cron.schedule('*/30 * * * *', getReconnect(client1, client2));
 
   console.log('Workers started!');
 };
