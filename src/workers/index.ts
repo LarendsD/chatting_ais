@@ -22,16 +22,16 @@ export default (
   }
 
   // Run building scenario
-  cron.schedule(
-    '*/5 * * * *',
-    getBuildScenario(bot1, bot2, client1, client2),
-    {
-      runOnInit: true,
-    }
-  );
+  // cron.schedule(
+  //  '*/5 * * * *',
+  //  getBuildScenario(bot1, bot2, client1, client2),
+  //  {
+  //    runOnInit: true,
+  //  }
+  // );
 
   // Run scenario
-  cron.schedule('*/5 * * * *', getRunScenario(bot1, bot2));
+  // cron.schedule('*/5 * * * *', getRunScenario(bot1, bot2));
 
   cron.schedule('*/85 * * * *', getRandomMessageToGroup(bot2, client2), {
     runOnInit: true,
