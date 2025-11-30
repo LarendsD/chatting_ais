@@ -17,7 +17,7 @@ export default (client: CAINode) => async (ctx: CommandContext<Context>) => {
     });
   }
 
-  await client.character.create_new_conversation(true);
+  await client.character.create_new_conversation(false);
 
   writeFileSync(scenarioPath, JSON.stringify([], null, 2));
 
