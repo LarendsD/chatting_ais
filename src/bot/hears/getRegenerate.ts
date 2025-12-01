@@ -18,13 +18,15 @@ export default (client: CAINode) => async (ctx: HearsContext<Context>) => {
 
   try {
     if (!messagesData.has(ctx.message.reply_to_message.message_id)) {
-      return replyByMessagingMode(
+      await replyByMessagingMode(
         ctx as Filter<Context & SessionFlavor<SessionData>, 'message'>, 
         client, 
         {
           text: ctx.message.text!
         }
       );
+
+      return;
     }
 
     const externalMessageId = messagesData.get(ctx.message.reply_to_message.message_id) as string;
