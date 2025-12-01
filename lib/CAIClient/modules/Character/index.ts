@@ -444,7 +444,7 @@ class Character {
     }
 
     if (opts.timeout_ms < 0) {
-      manual_opt.timeout_ms = 0;
+      opts.timeout_ms = 0;
     }
 
     return await this.prop.ws[1].send({
@@ -486,7 +486,7 @@ class Character {
         }
       },
       origin_id: 'web-next',
-    });
+    }, opts.timeout_ms);
   }
 
   /**

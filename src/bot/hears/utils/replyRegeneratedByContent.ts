@@ -6,13 +6,7 @@ const getRegenerated = async (
   client: CAINode,
   data: Data,
 ) => {
-  return new Promise<Awaited<ReturnType<typeof client['character']['generate_turn_candidate']>>>((resolve, reject) => {
-    setTimeout(() => reject('Timeout exceeded'), 15000);
-
-    return client.character.generate_turn_candidate(data.externalMessageId).then((result) => {
-      return resolve(result);
-    });
-  })
+  return client.character.generate_turn_candidate(data.externalMessageId, { timeout_ms: 30_000 })
 };
 
 const getVoiceLink = async (
@@ -92,11 +86,15 @@ const replyRegeneratedByContent = async (
   data: Data,
 ): Promise<ReplyByMessagingModeResult> => {
   if (ctx.message?.reply_to_message?.text) {
-    return textReplyRegenerated(ctx, client, data);
+    const textRegenerated = await textReplyRegenerated(ctx, client, data);
+
+    return textRegenerated;
   }
 
   if (ctx.message?.reply_to_message?.audio) {
-    return voiceReplyRegenerated(ctx, client, data, !!ctx.message.reply_to_message.caption);
+    const voiceRegenerated = await voiceReplyRegenerated(ctx, client, data, !!ctx.message.reply_to_message.caption);
+
+    return voiceRegenerated;
   }
 
   throw new Error('Unknown message!');

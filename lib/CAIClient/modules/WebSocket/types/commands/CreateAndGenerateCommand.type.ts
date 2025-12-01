@@ -20,12 +20,10 @@ type CreateAndGenerateTurnCommand = {
         is_human: boolean;
         name: string;
       },
-      candidates: [
-        {
-          candidate_id: string;
-          raw_content: string;
-        }
-      ],
+      candidates: Array<{
+        candidate_id: string;
+        raw_content: string;
+      }>,
       primary_candidate_id: string;
     },
     attachments: Array<{
