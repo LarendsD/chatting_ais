@@ -31,6 +31,12 @@ export class WebSocketClient {
 
     this.client.once('open', () => {
       console.log(`Messaging websocket connecton established for ${url}!`);
+      
+      setInterval(() => {
+        console.log('Ping...');
+
+        this.client?.ping();
+      }, 30 * 60 * 1000)
     })
 
     this.client.on('message', (data) => {
