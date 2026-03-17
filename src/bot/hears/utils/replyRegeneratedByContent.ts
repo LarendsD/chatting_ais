@@ -37,7 +37,8 @@ const textReplyRegenerated = async (
   console.log(firstMessage);
 
   const replied = await ctx.reply(firstMessage, {
-    reply_parameters: { message_id: ctx.message!.reply_to_message!.message_id }
+    reply_parameters: { message_id: ctx.message!.reply_to_message!.message_id },
+    parse_mode: 'MarkdownV2',
   });
 
   return {
@@ -61,7 +62,10 @@ const voiceReplyRegenerated = async (
   console.log(firstMessage);
 
   const replied = await ctx.replyWithVoice(voiceLink, {
-    reply_parameters: { message_id: ctx.message!.reply_to_message!.message_id },
+    reply_parameters: { 
+      message_id: ctx.message!.reply_to_message!.message_id,
+    },
+    parse_mode: 'MarkdownV2',
     caption: withText ? firstMessage : '',
   });
 

@@ -1,24 +1,8 @@
 import { Context, CommandContext } from 'grammy';
 import { writeFileSync } from 'fs';
 import { scenarioPath } from '../../workers/index.js';
-import CAINode from 'lib/CAIClient/index.js';
 
-const deleteMessages = async (client: CAINode, nextToken?: string) => {
-  const { meta, turns } = await client.chat.history_chat_turns(
-    undefined,
-    nextToken,
-  );
-
-  console.log(`Messages to delete: ${turns.length}`);
-
-  await client.character.delete_message(turns.map((turn) => turn.turn_key.turn_id));
-
-  if (turns.length >= 50) {
-    await deleteMessages(client, meta.next_token);
-  }
-};
-
-export default (client: CAINode) => async (ctx: CommandContext<Context>) => {
+export default () => async (ctx: CommandContext<Context>) => {
   if (!ctx.message) {
     return;
   }
@@ -32,8 +16,7 @@ export default (client: CAINode) => async (ctx: CommandContext<Context>) => {
     });
   }
 
-  await deleteMessages(client);
-
+  writeFileSync('context.json', JSON.stringify([]))
   writeFileSync(scenarioPath, JSON.stringify([], null, 2));
 
   return ctx.reply('История удалена!');

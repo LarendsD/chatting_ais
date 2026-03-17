@@ -1,9 +1,8 @@
 import { Context, CommandContext } from 'grammy';
 import { writeFileSync } from 'fs';
 import { scenarioPath } from '../../workers/index.js';
-import CAINode from 'lib/CAIClient/index.js';
 
-export default (client: CAINode) => async (ctx: CommandContext<Context>) => {
+export default () => async (ctx: CommandContext<Context>) => {
   if (!ctx.message) {
     return;
   }
@@ -17,9 +16,8 @@ export default (client: CAINode) => async (ctx: CommandContext<Context>) => {
     });
   }
 
-  await client.character.create_new_conversation(false);
-
-  writeFileSync(scenarioPath, JSON.stringify([], null, 2));
+  writeFileSync('context.json', JSON.stringify([]))
+  writeFileSync(scenarioPath, JSON.stringify([]));
 
   return ctx.reply('Новый чат начат!');
 };

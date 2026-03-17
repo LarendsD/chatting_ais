@@ -1,19 +1,24 @@
 import { session } from 'grammy';
 import initCommands from './commands/index.js';
 import initOns from './ons/index.js';
-import initHears from './hears/index.js';
 import BotMessagingMode from './enums/botMessagingMode.js';
 import BotContext from './types/BotContext.interface.js';
 import SessionData from './types/SessionData.interface.js';
-import CAINode from 'lib/CAIClient/index.js';
+import OpenAI from 'openai';
+import { autoRetry } from '@grammyjs/auto-retry';
+import { stream } from '@grammyjs/stream';
 
-export default async (bot: BotContext, client: CAINode) => {
+export default async (bot: BotContext, client: OpenAI) => {
   const initial = (): SessionData => {
     return { messagingMode: BotMessagingMode.TEXT };
   };
+
+  bot.api.config.use(autoRetry());
+  bot.use(stream());
+
   bot.use(session({ initial }));
 
-  initHears(bot, client);
+  // initHears(bot, client);
   initCommands(bot, client);
   initOns(bot, client);
 

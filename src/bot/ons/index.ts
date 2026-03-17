@@ -1,12 +1,12 @@
 import getGroupMessaging from './getGroupMessaging.js';
 import getPrivateMessaging from './getPrivateMessaging.js';
 import BotContext from '../types/BotContext.interface.js';
-import CAINode from 'lib/CAIClient/index.js';
+import OpenAI from 'openai';
 
-export default (bot: BotContext, client: CAINode) => {
+export default (bot: BotContext, client: OpenAI) => {
   bot
     .chatType(['group', 'supergroup'])
-    .on([':text', 'message:photo', ':caption'], getGroupMessaging(client));
+    .on([':text', ':photo'], getGroupMessaging(client));
 
   bot.chatType('private').on('message', getPrivateMessaging(client));
 };

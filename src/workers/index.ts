@@ -2,20 +2,17 @@ import cron from 'node-cron';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { writeFileSync, existsSync } from 'fs';
-import getRandomMessageToGroup from './getRandomMessageToGroup.js';
 import BotContext from 'src/bot/types/BotContext.interface.js';
-import getReconnect from './getReconnect.js';
-import getBuildScenario from './getBuildScenario.js';
+import OpenAI from 'openai';
+import getRandomMessageToGroup from './getRandomMessageToGroup.js';
 import getRunScenario from './getRunScenario.js';
-import CAINode from 'lib/CAIClient/index.js';
 
 export const scenarioPath = join(tmpdir(), 'scenario.json');
 
 export default (
   bot1: BotContext,
   bot2: BotContext,
-  client1: CAINode,
-  client2: CAINode,
+  client: OpenAI
 ) => {
   if (!existsSync(scenarioPath)) {
     writeFileSync(scenarioPath, '[]');
@@ -31,11 +28,14 @@ export default (
   // );
 
   // Run scenario
-  // cron.schedule('*/5 * * * *', getRunScenario(bot1, bot2));
+  // cron.schedule('*/60 * * * *', getRunScenario(client, bot1, bot2), {
+  //  runOnInit: true,
+  // });
 
-  cron.schedule('*/85 * * * *', getRandomMessageToGroup(bot2, client2), {
-    runOnInit: true,
-  });
+  // НЕ ВКЛЮЧАЙ, ПРОСИЛИ ЖЕ!
+  // cron.schedule('*/85 * * * *', getRandomMessageToGroup(bot1, client), {
+  //  runOnInit: true,
+  // });
 
   // cron.schedule('*/30 * * * *', getReconnect(client1, client2));
 

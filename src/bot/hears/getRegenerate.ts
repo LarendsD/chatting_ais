@@ -2,9 +2,9 @@ import {Context, Filter, HearsContext, SessionFlavor } from 'grammy';
 import replyByMessagingMode, { messagesData } from '../ons/utils/replyByMessagingType.js';
 import replyRegeneratedByContent from './utils/replyRegeneratedByContent.js';
 import SessionData from '../types/SessionData.interface.js';
-import CAINode from 'lib/CAIClient/index.js';
+import OpenAI from 'openai';
 
-export default (client: CAINode) => async (ctx: HearsContext<Context>) => {
+export default (client: OpenAI) => async (ctx: HearsContext<Context>) => {
   console.log(ctx.message);
   console.log('РЕГЕНЕРАТЕ');
 
@@ -20,10 +20,7 @@ export default (client: CAINode) => async (ctx: HearsContext<Context>) => {
     if (!messagesData.has(ctx.message.reply_to_message.message_id)) {
       await replyByMessagingMode(
         ctx as Filter<Context & SessionFlavor<SessionData>, 'message'>, 
-        client, 
-        {
-          text: ctx.message.text!
-        }
+        client,
       );
 
       return;

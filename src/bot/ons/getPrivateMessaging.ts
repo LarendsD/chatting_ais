@@ -1,26 +1,23 @@
 import { Context, Filter, SessionFlavor } from 'grammy';
 import SessionData from '../types/SessionData.interface.js';
-import replyByMessagingMode, { messagesData } from './utils/replyByMessagingType.js';
-import CAINode from 'lib/CAIClient/index.js';
+import replyByMessagingMode from './utils/replyByMessagingType.js';
+import OpenAI from 'openai';
+import { StreamFlavor } from '@grammyjs/stream';
 
-export default (client: CAINode) =>
-  async (ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>) => {
-    console.log(ctx.message);
+export default (client: OpenAI) =>
+  async (ctx: Filter<StreamFlavor<Context> & SessionFlavor<SessionData>, 'message'>) => {
+    console.log('АЛЕ НАХУЙ!!!');
+
     if ((ctx.message.text || ctx.message.caption) || ctx.message.photo) {
       try {
-        // console.log('До');
-        // console.log(client.user.info.user.user);
-        // client.user.info.user.user.id = ctx.from.id;
-        // client.user.info.user.user.username = ctx.from.username;
-        // console.log('После');
-        // console.log(client.user.info.user.user)
+        console.log(ctx.message);
 
         const replied = await replyByMessagingMode(ctx, client, {
           text: ctx.message.text ?? ctx.message.caption,
           photo: ctx.message.photo,
         });
 
-        messagesData.set(replied.messageId, replied.externalMessageId);
+        console.log(replied);
 
         return replied;
       } catch (error) {
@@ -34,9 +31,13 @@ export default (client: CAINode) =>
       }
     }
 
+    console.log('АЛЕ НАХУЙ 2!!!');
+
+    console.log(ctx);
+
     return ctx
       .reply('Ты мне хуйню не шли да?', {
-        reply_parameters: { message_id: ctx.message.message_id },
+        reply_parameters: { message_id: ctx.update.message.message_id },
       })
       .catch((err) => console.error(err));
   };

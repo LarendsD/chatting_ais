@@ -1,9 +1,9 @@
 import { Context, Filter, SessionFlavor } from 'grammy';
 import SessionData from '../types/SessionData.interface.js';
-import replyByMessagingMode, { messagesData } from './utils/replyByMessagingType.js';
-import CAINode from 'lib/CAIClient/index.js';
+import replyByMessagingMode from './utils/replyByMessagingType.js';
+import OpenAI from 'openai';
 
-export default (client: CAINode) =>
+export default (client: OpenAI) =>
   async (ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>) => {
     console.log(ctx.message);
     const me = await ctx.api.getMe();
@@ -27,7 +27,7 @@ export default (client: CAINode) =>
           photo: ctx.message.photo,
          });
 
-        messagesData.set(replied.messageId, replied.externalMessageId);
+        // messagesData.set(replied.messageId, replied.externalMessageId);
 
         return replied;
       } catch (error) {

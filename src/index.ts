@@ -1,9 +1,8 @@
 import { Bot } from 'grammy';
-import runWorkers from './workers/index.js';
 import runBot from './bot/index.js';
 import { config } from 'dotenv';
 import BotContext from './bot/types/BotContext.interface.js';
-import CAINode from 'lib/CAIClient/index.js';
+import OpenAI from 'openai';
 
 config();
 
@@ -28,22 +27,14 @@ const run = async () => {
     throw new Error('character.ai user token not provided!');
   }
 
-  const characterAiTimyr = new CAINode();
-  const characterAiZahar = new CAINode();
-
-  await characterAiTimyr.login(characterAiUserToken);
-  await characterAiZahar.login(characterAiUserToken);
-
   const zaharBot = new Bot(zaharBotToken) as BotContext;
-  const timyrBot = new Bot(timyrBotToken) as BotContext;
 
-  await characterAiZahar.character.connect(zaharCharacterAiChatToken);
-  await characterAiTimyr.character.connect(timyrCharacterAiChatToken);
+  const client = new OpenAI({
+    baseURL: 'http://localhost:11434/v1',
+    apiKey: 'ollama' // любой ключ
+  });
 
-  await runBot(timyrBot, characterAiTimyr);
-  await runBot(zaharBot, characterAiZahar);
-
-  runWorkers(timyrBot, zaharBot, characterAiTimyr, characterAiZahar);
+  await runBot(zaharBot, client);
 };
 
 run();

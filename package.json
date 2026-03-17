@@ -12,12 +12,18 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.3.0",
+    "@grammyjs/auto-retry": "^2.0.2",
+    "@grammyjs/stream": "^1.0.1",
+    "@huggingface/inference": "^4.13.5",
     "@types/node-cron": "^3.0.11",
+    "@xenova/transformers": "^2.17.2",
     "axios": "^1.13.2",
     "cainode": "^1.2.3",
-    "grammy": "^1.35.0",
+    "grammy": "^1.39.3",
     "node-cron": "^3.0.3",
     "node_characterai": "^1.2.7",
+    "openai": "^6.31.0",
     "typescript": "5.8.2",
     "uuid": "^13.0.0"
   },

@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from 'fs';
+import { pathToContext } from 'src/bot/commands/getOutOfContext.js';
 
 interface TgMessage {
   id: number;
@@ -25,12 +26,7 @@ interface TgMessages {
   messages: TgMessage[];
 }
 
-const mapping: {
-  [key: string]: string;
-} = {
-  user1988339284: 'assistant',
-  user1881370456: 'user',
-};
+const userId = 'user1988339284'
 
 const run = () => {
   const data = readFileSync('./messages.json', { encoding: 'utf-8' });
@@ -38,11 +34,9 @@ const run = () => {
   const parsedData: TgMessages = JSON.parse(data);
 
   const result = [];
-  const resultMessage = [];
 
-  const dataToFor = Object.entries(parsedData.messages);
 
-  for (const [index, message] of dataToFor) {
+  for (const message of parsedData.messages) {
     if (
       message.type === 'message' &&
       message.text &&
@@ -50,22 +44,14 @@ const run = () => {
       !message.forwarded_from
     ) {
       const from = message.from_id;
-      resultMessage.push(message.text);
 
-      if (parsedData.messages[Number(index) + 1]?.from_id !== from) {
-        const role = mapping[from];
-
-        result.push({
-          role,
-          content: resultMessage.join(' '),
-        });
-
-        resultMessage.splice(0);
+      if (from === userId) {
+        result.push(message.text);
       }
     }
   }
 
-  writeFileSync('context.json', JSON.stringify(result, null, 2));
+  writeFileSync(pathToContext, JSON.stringify(result, null, 2));
 };
 
 run();
