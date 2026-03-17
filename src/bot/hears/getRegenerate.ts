@@ -1,6 +1,6 @@
-import {Context, Filter, HearsContext, SessionFlavor } from 'grammy';
+import { Context, Filter, HearsContext, SessionFlavor } from 'grammy';
 import replyByMessagingMode, { messagesData } from '../ons/utils/replyByMessagingType.js';
-import replyRegeneratedByContent from './utils/replyRegeneratedByContent.js';
+// import replyRegeneratedByContent from './utils/replyRegeneratedByContent.js';
 import SessionData from '../types/SessionData.interface.js';
 import OpenAI from 'openai';
 
@@ -19,19 +19,20 @@ export default (client: OpenAI) => async (ctx: HearsContext<Context>) => {
   try {
     if (!messagesData.has(ctx.message.reply_to_message.message_id)) {
       await replyByMessagingMode(
-        ctx as Filter<Context & SessionFlavor<SessionData>, 'message'>, 
+        ctx as Filter<Context & SessionFlavor<SessionData>, 'message'>,
         client,
+        {}
       );
 
       return;
     }
 
-    const externalMessageId = messagesData.get(ctx.message.reply_to_message.message_id) as string;
+    // const externalMessageId = messagesData.get(ctx.message.reply_to_message.message_id) as string;
 
-    const regenerated = await replyRegeneratedByContent(ctx, client, {externalMessageId});
+    // const regenerated = await replyRegeneratedByContent(ctx, client, { externalMessageId });
 
-    messagesData.set(regenerated.messageId, regenerated.externalMessageId);
-    } catch (error) {
+    // messagesData.set(regenerated.messageId, regenerated.externalMessageId);
+  } catch (error) {
     console.error(error);
 
     return ctx

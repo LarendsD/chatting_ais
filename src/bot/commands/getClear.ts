@@ -16,7 +16,7 @@ export default () => async (ctx: CommandContext<Context>) => {
     });
   }
 
-  writeFileSync('context.json', JSON.stringify([]))
+  writeFileSync('context.json', JSON.stringify([]));
   writeFileSync(scenarioPath, JSON.stringify([], null, 2));
 
   return ctx.reply('История удалена!');

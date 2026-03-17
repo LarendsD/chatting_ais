@@ -41,8 +41,8 @@ const systemPrompt = `Ты генератор опросов на русском
 Генерируй опросы В ДУХЕ ПРАВИЛЬНЫХ ПРИМЕРОВ - провокационные, дерзкие, абсурдные, с неожиданными формулировками, БЕЗ запрещенных тем и паттернов!`;
 
 interface Response {
-  question: string; 
-  answers: string[]
+  question: string;
+  answers: string[];
 }
 
 export const generateRandomPoll = async (client: OpenAI): Promise<Response> => {
@@ -51,12 +51,12 @@ export const generateRandomPoll = async (client: OpenAI): Promise<Response> => {
     messages: [
       {
         role: 'system',
-        content: systemPrompt
+        content: systemPrompt,
       },
       {
         role: 'user',
-        content: 'Сгенерируй опрос на случайную абсурдную тему. Используй разное количество ответов от 2 до 10.'
-      }
+        content: 'Сгенерируй опрос на случайную абсурдную тему. Используй разное количество ответов от 2 до 10.',
+      },
     ],
     temperature: 0.9,
   });
@@ -72,10 +72,10 @@ export const generateRandomPoll = async (client: OpenAI): Promise<Response> => {
   let result: Response;
 
   try {
-    result = JSON.parse(text);   
+    result = JSON.parse(text);
   } catch {
     return await generateRandomPoll(client);
   }
 
   return result;
-}
+};

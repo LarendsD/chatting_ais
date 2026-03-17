@@ -1,49 +1,88 @@
-import typescriptEslintEslintPlugin from '@typescript-eslint/eslint-plugin';
+// @ts-check
 import globals from 'globals';
-import tsParser from '@typescript-eslint/parser';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import js from '@eslint/js';
-import { FlatCompat } from '@eslint/eslintrc';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-});
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import stylistic from '@stylistic/eslint-plugin';
+import parser from '@typescript-eslint/parser';
 
 export default [
-  ...compat.extends(
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    // 'plugin:prettier/recommended',
-  ),
   {
+    ignores: [
+      'eslint.config.mjs', 
+      'drizzle/**', 
+      'dist/**', 
+      'node_modules/**'
+    ],
     plugins: {
-      '@typescript-eslint': typescriptEslintEslintPlugin,
+      '@stylistic': stylistic,
+      '@typescript-eslint': tsPlugin,
     },
+    files: ['src/**/*.ts', 'test/**/*.ts', 'lib/**/*.ts'],
     languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        project: './tsconfig.json',
-      },
-      // Используем глобальные переменные вместо env
+      parser,
       globals: {
-        ...globals.browser, // Глобалы для браузера (window, document и т.д.)
-        ...globals.node, // Глобалы для Node.js (process, __dirname и т.д.)
-        // MyCustomGlobal: 'readonly',
+        ...globals.node,
+        ...globals.jest,
       },
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+      ecmaVersion: 5,
+      sourceType: 'module',
     },
     rules: {
-      '@typescript-eslint/quotes': [
-        'error',
-        'single',
-        // { avoidEscape: true, allowTemplateLiterals: true },
-      ], // Правило для кавычек
+      ...stylistic.configs.recommended.rules,
+      '@stylistic/array-bracket-newline': ['error', 'consistent'],
+      '@stylistic/array-element-newline': ['error', 'consistent'],
+      '@stylistic/function-call-argument-newline': ['error', 'consistent'],
+      '@stylistic/curly-newline': ['error', { consistent: true }],
+      '@stylistic/function-paren-newline': ['error', 'consistent'],
+      '@stylistic/implicit-arrow-linebreak': ['error', 'beside'],
+      '@stylistic/lines-around-comment': ['error', {
+        afterBlockComment: false,
+        beforeBlockComment: false,
+        afterLineComment: false,
+        beforeLineComment: false,
+      }],
+      '@stylistic/multiline-ternary': ['error', 'never'],
+      '@stylistic/object-curly-newline': ['error', { consistent: true }],
+      '@stylistic/operator-linebreak': ['error', 'after', { overrides: { '=': 'none' } }],
+      '@stylistic/arrow-parens': ['error', 'always'],
+      '@stylistic/no-extra-parens': ['error', 'all'],
+      '@stylistic/semi': ['error', 'always'],
+      '@stylistic/semi-style': ['error', 'last'],
+      '@stylistic/max-len': ['error', { 
+        code: 110, 
+        ignoreTemplateLiterals: true,
+        ignoreStrings: true,
+      }],
+      '@stylistic/member-delimiter-style': ['error', {
+        multiline: {
+          delimiter: 'semi',
+          requireLast: true,
+        },
+        singleline: {
+          delimiter: 'semi',
+          requireLast: false,
+        }
+      }],
+      '@stylistic/one-var-declaration-per-line': ['error', 'always'],
+      '@stylistic/nonblock-statement-body-position': ['error', 'beside'],
+      '@stylistic/brace-style': ['error', '1tbs'],
+      '@stylistic/quote-props': ['error', 'as-needed'],
+
+      // typescript-eslint rules
+      '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
 ];

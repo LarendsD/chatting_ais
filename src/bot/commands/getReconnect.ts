@@ -15,7 +15,7 @@ export default (client: CAINode) => async (ctx: CommandContext<Context>) => {
     });
   }
 
-  await ctx.reply('Перезапуск...')
+  await ctx.reply('Перезапуск...');
 
   const zaharCharacterAiChatToken = process.env.ZAHAR_CHARACTER_AI_CHAT_TOKEN;
 

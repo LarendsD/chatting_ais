@@ -1,18 +1,15 @@
-import cron from 'node-cron';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { writeFileSync, existsSync } from 'fs';
 import BotContext from 'src/bot/types/BotContext.interface.js';
 import OpenAI from 'openai';
-import getRandomMessageToGroup from './getRandomMessageToGroup.js';
-import getRunScenario from './getRunScenario.js';
 
 export const scenarioPath = join(tmpdir(), 'scenario.json');
 
 export default (
-  bot1: BotContext,
-  bot2: BotContext,
-  client: OpenAI
+  _bot1: BotContext,
+  _bot2: BotContext,
+  _client: OpenAI
 ) => {
   if (!existsSync(scenarioPath)) {
     writeFileSync(scenarioPath, '[]');

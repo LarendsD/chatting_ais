@@ -4,9 +4,8 @@ import { readFileSync, writeFileSync } from 'fs';
 import BotMessagingMode from 'src/bot/enums/botMessagingMode.js';
 import SessionData from 'src/bot/types/SessionData.interface.js';
 import { PhotoSize } from 'grammy/types';
-import { StreamFlavor } from '@grammyjs/stream';
 
-export const initialContext = 'Ты чат-бот, открытый и искренний, не стесняйся выражений, разговаривай открыто, словно с другом, материться можно и даже нужно!'
+export const initialContext = 'Ты чат-бот, открытый и искренний, не стесняйся выражений, разговаривай открыто, словно с другом, материться можно и даже нужно!';
 
 export const messagesData = new Map<number, string>();
 
@@ -39,7 +38,7 @@ export const getImage = async (
 
     const url = `https://api.telegram.org/file/bot${zaharBotToken}/${file_path}`;
 
-    const imageBuffer = await fetch(url).then(r => r.arrayBuffer());
+    const imageBuffer = await fetch(url).then((r) => r.arrayBuffer());
     const base64Image = Buffer.from(imageBuffer).toString('base64');
 
     writeFileSync('image.png', Buffer.from(imageBuffer) as NodeJS.ArrayBufferView);
@@ -67,7 +66,7 @@ const getResponse = async (
   if (ctx.message.from.username) {
     sender = `${sender} (@${ctx.message.from.username})`;
   }
-  
+
   // Создаем копию контекста для сохранения (без системного сообщения, оно уже в initialContext)
   const contextToPush: OpenAI.Responses.ResponseInput = [
     ...context,
@@ -87,12 +86,12 @@ const getResponse = async (
       type: 'input_image',
       image_url: image.value,
       detail: 'auto',
-    })
+    });
   }
-        
-  const messagesToSend: OpenAI.Responses.ResponseInputItem[]  = [
-    ...context, 
-    { role: 'user' as const, content }
+
+  const messagesToSend: OpenAI.Responses.ResponseInputItem[] = [
+    ...context,
+    { role: 'user' as const, content },
   ];
 
   // Выбираем модель в зависимости от наличия изображения
@@ -104,7 +103,7 @@ const getResponse = async (
     instructions: initialContext,
     input: messagesToSend,
     temperature: 0.7,
-  })
+  });
 
   /* const res = await client.chat.completions.create({
     model,
@@ -114,7 +113,7 @@ const getResponse = async (
     frequency_penalty: 0.9,     // Усиленная защита от повторов (было 0.5)
     presence_penalty: 0.4,      // Поощрение новых тем (было 0.2)
     // max_tokens: 150,             // Короткие, ёмкие ответы (1-3 предложения)
-    
+
     // 🛑 СТОП-СЛОВА (против формальных ответов, самопрезентаций, повторения промпта)
     stop: [
       // Против квадратных скобок
@@ -138,7 +137,7 @@ const getResponse = async (
 };
 
 const textReply = async (
-  ctx: Filter<StreamFlavor<Context> & SessionFlavor<SessionData>, 'message'>,
+  ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>,
   client: OpenAI,
   data: Data,
   context: OpenAI.Responses.ResponseInput,
@@ -165,7 +164,7 @@ const textReply = async (
 
   return {
     messageId: replied.message_id,
-  }
+  };
 };
 
 interface Data {
@@ -178,18 +177,18 @@ interface ReplyByMessagingModeResult {
 }
 
 const replyByMessagingMode = async (
-  ctx: Filter<StreamFlavor<Context> & SessionFlavor<SessionData>, 'message'>,
+  ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>,
   client: OpenAI,
   data: Data,
 ): Promise<ReplyByMessagingModeResult> => {
   const messagingMode = ctx.session.messagingMode;
-  
+
   // Читаем контекст с обработкой ошибок
   let parsedContext: OpenAI.Responses.ResponseInput = [];
   try {
     const context = readFileSync('context.json', { encoding: 'utf-8' });
     parsedContext = JSON.parse(context);
-  } catch (error) {
+  } catch {
     // Если файл не существует или поврежден, начинаем с пустого контекста
     parsedContext = [];
   }

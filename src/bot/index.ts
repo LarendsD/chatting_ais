@@ -22,7 +22,7 @@ export default async (bot: BotContext, client: OpenAI) => {
   initCommands(bot, client);
   initOns(bot, client);
 
-  bot.start({
+  void bot.start({
     onStart: (botInfo) => console.log(`Bot ${botInfo.username} started!`),
   });
 
@@ -34,11 +34,9 @@ export default async (bot: BotContext, client: OpenAI) => {
     return ctx
       .reply(
         'Бля залагал чет, повтори плиз!',
-        ctx.message
-          ? {
-              reply_parameters: { message_id: ctx.message.message_id },
-            }
-          : {},
+        ctx.message ? {
+          reply_parameters: { message_id: ctx.message.message_id },
+        } : {},
       )
       .catch((error) => console.error(error));
   });

@@ -6,7 +6,7 @@ const getRegenerated = async (
   client: CAINode,
   data: Data,
 ) => {
-  return client.character.generate_turn_candidate(data.externalMessageId, { timeout_ms: 30_000 })
+  return client.character.generate_turn_candidate(data.externalMessageId, { timeout_ms: 30_000 });
 };
 
 const getVoiceLink = async (
@@ -44,7 +44,7 @@ const textReplyRegenerated = async (
   return {
     messageId: replied.message_id,
     externalMessageId: response.turn.turn_key.turn_id,
-  }
+  };
 };
 
 const voiceReplyRegenerated = async (
@@ -62,7 +62,7 @@ const voiceReplyRegenerated = async (
   console.log(firstMessage);
 
   const replied = await ctx.replyWithVoice(voiceLink, {
-    reply_parameters: { 
+    reply_parameters: {
       message_id: ctx.message!.reply_to_message!.message_id,
     },
     parse_mode: 'MarkdownV2',
@@ -72,7 +72,7 @@ const voiceReplyRegenerated = async (
   return {
     messageId: replied.message_id,
     externalMessageId: response.turn.turn_key.turn_id,
-  }
+  };
 };
 
 interface Data {
@@ -96,7 +96,12 @@ const replyRegeneratedByContent = async (
   }
 
   if (ctx.message?.reply_to_message?.audio) {
-    const voiceRegenerated = await voiceReplyRegenerated(ctx, client, data, !!ctx.message.reply_to_message.caption);
+    const voiceRegenerated = await voiceReplyRegenerated(
+      ctx,
+      client,
+      data,
+      !!ctx.message.reply_to_message.caption
+    );
 
     return voiceRegenerated;
   }

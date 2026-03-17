@@ -31,10 +31,10 @@ const run = async () => {
 
   const client = new OpenAI({
     baseURL: 'http://localhost:11434/v1',
-    apiKey: 'ollama' // любой ключ
+    apiKey: 'ollama', // любой ключ
   });
 
   await runBot(zaharBot, client);
 };
 
-run();
+void run();

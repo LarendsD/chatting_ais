@@ -26,7 +26,7 @@ interface TgMessages {
   messages: TgMessage[];
 }
 
-const userId = 'user1988339284'
+const userId = 'user1988339284';
 
 const run = () => {
   const data = readFileSync('./messages.json', { encoding: 'utf-8' });
@@ -34,7 +34,6 @@ const run = () => {
   const parsedData: TgMessages = JSON.parse(data);
 
   const result = [];
-
 
   for (const message of parsedData.messages) {
     if (

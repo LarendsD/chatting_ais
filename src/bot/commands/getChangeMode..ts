@@ -35,18 +35,19 @@ const changePublic = (
   }
 };
 
-export default (mode: BotMessagingMode) =>
-  async (ctx: CommandContext<Context & SessionFlavor<SessionData>>) => {
-    switch (ctx.chat.type) {
-      case 'private':
-        return changePrivate(ctx, mode);
-      case 'group':
-        return changePublic(ctx, mode);
-      case 'supergroup':
-        return changePublic(ctx, mode);
-      default:
-        return ctx.reply(
-          `Данная команда недоступна для типа чата: ${ctx.chat.type}`,
-        );
-    }
-  };
+export default (
+  mode: BotMessagingMode
+) => async (ctx: CommandContext<Context & SessionFlavor<SessionData>>) => {
+  switch (ctx.chat.type) {
+    case 'private':
+      return changePrivate(ctx, mode);
+    case 'group':
+      return changePublic(ctx, mode);
+    case 'supergroup':
+      return changePublic(ctx, mode);
+    default:
+      return ctx.reply(
+        `Данная команда недоступна для типа чата: ${ctx.chat.type}`,
+      );
+  }
+};
