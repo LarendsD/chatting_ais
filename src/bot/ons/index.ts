@@ -1,9 +1,9 @@
 import getGroupMessaging from './getGroupMessaging.js';
 import getPrivateMessaging from './getPrivateMessaging.js';
 import BotContext from '../types/BotContext.interface.js';
-import OpenAI from 'openai';
+import AIClient from 'lib/AiClient/index.js';
 
-export default (bot: BotContext, client: OpenAI) => {
+export default (bot: BotContext, client: AIClient) => {
   bot
     .chatType(['group', 'supergroup'])
     .on([':text', ':photo'], getGroupMessaging(client));

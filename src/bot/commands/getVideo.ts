@@ -1,9 +1,8 @@
 import { Context, CommandContext, SessionFlavor, InputFile } from 'grammy';
 import SessionData from '../types/SessionData.interface.js';
-import OpenAI from 'openai';
-import { generateVideo, freeGoogleTranslate } from './utils/generateVideoByPromt.js';
+import AIClient from 'lib/AiClient/index.js';
 
-export default (_client: OpenAI) => async (ctx: CommandContext<Context & SessionFlavor<SessionData>>) => {
+export default (client: AIClient) => async (ctx: CommandContext<Context & SessionFlavor<SessionData>>) => {
   console.log(ctx);
 
   if (!ctx.message) {
@@ -20,12 +19,13 @@ export default (_client: OpenAI) => async (ctx: CommandContext<Context & Session
     });
   }
 
-  // Переводим промпт на английский (CLIP лучше понимает английский)
-  const englishPrompt = await freeGoogleTranslate(prompt);
-  console.log(`Русский промпт: ${prompt}`);
-  console.log(`Английский промпт: ${englishPrompt}`);
+  const video = await client.art.videos.get({
+    text: prompt,
+  });
 
-  const video = await generateVideo(englishPrompt);
+  if (!video) {
+    throw new Error(`Video not found!`);
+  }
 
   return ctx.replyWithVideo(new InputFile(new Uint8Array(video)), {
     reply_parameters: { message_id: ctx.message.message_id },

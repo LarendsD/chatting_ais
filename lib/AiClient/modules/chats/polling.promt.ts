@@ -1,6 +1,4 @@
-import OpenAI from 'openai';
-
-const systemPrompt = `Ты генератор опросов на русском языке. Генерируй ТОЛЬКО ОДИН случайный опрос на абсурдную тему в формате JSON.
+export const pollingPromt = `Ты генератор опросов на русском языке. Генерируй ТОЛЬКО ОДИН случайный опрос на абсурдную тему в формате JSON.
 
 КРИТИЧЕСКИ ВАЖНО:
 1. ФОРМАТ: Отвечай ТОЛЬКО валидным JSON без дополнительного текста! Структура: {"question": "текст вопроса", "answers": ["вариант1", "вариант2", ...]}. НЕ добавляй объяснений, комментариев, markdown-разметки!
@@ -39,43 +37,3 @@ const systemPrompt = `Ты генератор опросов на русском
 - От 2 до 10 ответов?
 
 Генерируй опросы В ДУХЕ ПРАВИЛЬНЫХ ПРИМЕРОВ - провокационные, дерзкие, абсурдные, с неожиданными формулировками, БЕЗ запрещенных тем и паттернов!`;
-
-interface Response {
-  question: string;
-  answers: string[];
-}
-
-export const generateRandomPoll = async (client: OpenAI): Promise<Response> => {
-  const response = await client.chat.completions.create({
-    model: 'CognitiveComputations/dolphin-llama3.1:8b',
-    messages: [
-      {
-        role: 'system',
-        content: systemPrompt,
-      },
-      {
-        role: 'user',
-        content: 'Сгенерируй опрос на случайную абсурдную тему. Используй разное количество ответов от 2 до 10.',
-      },
-    ],
-    temperature: 0.9,
-  });
-
-  const text = response.choices[0].message.content;
-
-  console.log(`Generated poll: ${text}`);
-
-  if (!text) {
-    return await generateRandomPoll(client);
-  }
-
-  let result: Response;
-
-  try {
-    result = JSON.parse(text);
-  } catch {
-    return await generateRandomPoll(client);
-  }
-
-  return result;
-};

@@ -1,11 +1,9 @@
 import { Context, Filter, SessionFlavor } from 'grammy';
-import OpenAI from 'openai';
-import { readFileSync, writeFileSync } from 'fs';
+import { writeFileSync } from 'fs';
 import BotMessagingMode from 'src/bot/enums/botMessagingMode.js';
 import SessionData from 'src/bot/types/SessionData.interface.js';
 import { PhotoSize } from 'grammy/types';
-
-export const initialContext = 'Ты чат-бот, открытый и искренний, не стесняйся выражений, разговаривай открыто, словно с другом, материться можно и даже нужно!';
+import AIClient from 'lib/AiClient/index.js';
 
 export const messagesData = new Map<number, string>();
 
@@ -54,111 +52,44 @@ export const getImage = async (
 
 const getResponse = async (
   ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>,
-  client: OpenAI,
+  client: AIClient,
   data: Data,
-  context: OpenAI.Responses.ResponseInput,
 ) => {
   const image = await getImage(ctx, data);
 
-  const fullname = [ctx.message.from.last_name, ctx.message.from.first_name].join(' ').trim();
-  let sender = fullname;
+  const senderInfo = {
+    firstName: ctx.message.from.first_name,
+    lastName: ctx.message.from.last_name,
+    username: ctx.message.from.username,
+  };
 
-  if (ctx.message.from.username) {
-    sender = `${sender} (@${ctx.message.from.username})`;
-  }
+  const message = {
+    text: data.text,
+    images: image ? [image.value] : [],
+  };
 
-  // Создаем копию контекста для сохранения (без системного сообщения, оно уже в initialContext)
-  const contextToPush: OpenAI.Responses.ResponseInput = [
-    ...context,
-  ];
+  const response = await client.chats.messaging.getAnswer(
+    senderInfo,
+    message,
+  );
 
-  const content: OpenAI.Responses.ResponseInputMessageContentList = [];
-
-  if (data.text) {
-    content.push({
-      type: 'input_text',
-      text: `[${sender}]: ${data.text}`,
-    });
-  }
-
-  if (image) {
-    content.push({
-      type: 'input_image',
-      image_url: image.value,
-      detail: 'auto',
-    });
-  }
-
-  const messagesToSend: OpenAI.Responses.ResponseInputItem[] = [
-    ...context,
-    { role: 'user' as const, content },
-  ];
-
-  // Выбираем модель в зависимости от наличия изображения
-  // Если есть изображение - используем мультимодальную модель, иначе - текстовую
-  const model = 'frob/qwen3.5-instruct';
-
-  const res = await client.responses.create({
-    model,
-    instructions: initialContext,
-    input: messagesToSend,
-    temperature: 0.7,
-  });
-
-  /* const res = await client.chat.completions.create({
-    model,
-
-    temperature: 0.7,           // Баланс между креативностью и адекватностью
-    top_p: 0.9,                  // Контроль разнообразия
-    frequency_penalty: 0.9,     // Усиленная защита от повторов (было 0.5)
-    presence_penalty: 0.4,      // Поощрение новых тем (было 0.2)
-    // max_tokens: 150,             // Короткие, ёмкие ответы (1-3 предложения)
-
-    // 🛑 СТОП-СЛОВА (против формальных ответов, самопрезентаций, повторения промпта)
-    stop: [
-      // Против квадратных скобок
-      '\n[', '[ОТПРАВИТЕЛЬ', '[отправитель', '[Отправитель',
-      // Против самопрезентаций и формальных ответов
-      'Зови меня', 'Меня зовут', 'Я -', 'Я бот', 'Я ИИ', 'Я чат-бот', 'Чат-бот', 'ИИ', 'AI', 'модель',
-      'Свободный бот', 'безцензурный бот', 'отвечу на все вопросы', 'отвечу на вопросы',
-    ],
-  }); */
-
-  contextToPush.push({
-    role: 'user',
-    content: content.filter((content) => content.type !== 'input_image'),
-  });
-
-  contextToPush.push(...res.output.filter(({ type }) => type !== 'reasoning'));
-
-  writeFileSync('context.json', JSON.stringify(contextToPush, null, 2));
-
-  return res;
+  return response;
 };
 
 const textReply = async (
   ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>,
-  client: OpenAI,
+  client: AIClient,
   data: Data,
-  context: OpenAI.Responses.ResponseInput,
 ) => {
-  const response = await getResponse(ctx, client, data, context);
+  const response = await getResponse(ctx, client, data);
 
-  const firstMessage = response.output.find(({ type }) => type === 'message');
-
-  if (!firstMessage || firstMessage.type !== 'message') {
+  if (!response.text) {
     throw new Error('WTF???');
   }
 
-  const firstContent = firstMessage.content[0];
+  console.log(response.text);
 
-  if (!firstContent || firstContent.type !== 'output_text') {
-    throw new Error(firstContent.refusal);
-  }
-
-  console.log(firstContent);
-
-  const replied = await ctx.reply(firstContent.text, {
+  const replied = await ctx.reply(response.text, {
     reply_parameters: { message_id: ctx.message.message_id },
   });
 
@@ -178,24 +109,14 @@ interface ReplyByMessagingModeResult {
 
 const replyByMessagingMode = async (
   ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>,
-  client: OpenAI,
+  client: AIClient,
   data: Data,
 ): Promise<ReplyByMessagingModeResult> => {
   const messagingMode = ctx.session.messagingMode;
 
-  // Читаем контекст с обработкой ошибок
-  let parsedContext: OpenAI.Responses.ResponseInput = [];
-  try {
-    const context = readFileSync('context.json', { encoding: 'utf-8' });
-    parsedContext = JSON.parse(context);
-  } catch {
-    // Если файл не существует или поврежден, начинаем с пустого контекста
-    parsedContext = [];
-  }
-
   switch (messagingMode) {
     case BotMessagingMode.TEXT:
-      return textReply(ctx, client, data, parsedContext);
+      return textReply(ctx, client, data);
     default:
       throw new Error(`Unknown messagingMode: ${messagingMode}`);
   }

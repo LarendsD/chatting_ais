@@ -1,8 +1,7 @@
 import { Context, CommandContext } from 'grammy';
-import { writeFileSync } from 'fs';
-import { scenarioPath } from '../../workers/index.js';
+import AIClient from 'lib/AiClient/index.js';
 
-export default () => async (ctx: CommandContext<Context>) => {
+export default (client: AIClient) => async (ctx: CommandContext<Context>) => {
   if (!ctx.message) {
     return;
   }
@@ -16,8 +15,7 @@ export default () => async (ctx: CommandContext<Context>) => {
     });
   }
 
-  writeFileSync('context.json', JSON.stringify([]));
-  writeFileSync(scenarioPath, JSON.stringify([], null, 2));
+  client.chats.clear();
 
   return ctx.reply('История удалена!');
 };

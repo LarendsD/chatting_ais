@@ -5,18 +5,18 @@ import BotContext from '../types/BotContext.interface.js';
 import getChangeMode from './getChangeMode..js';
 import BotMessagingMode from '../enums/botMessagingMode.js';
 import getHelp from './getHelp.js';
-import OpenAI from 'openai';
 import getImage from './getImage.js';
 import getVideo from './getVideo.js';
 import getOutOfContext from './getOutOfContext.js';
 import getImageFromImage from './getImageFromImage.js';
 import getRandomPoll from './getRandomPoll.js';
+import AIClient from 'lib/AiClient/index.js';
 
-export default (bot: BotContext, client: OpenAI) => {
+export default (bot: BotContext, client: AIClient) => {
   bot.command('start', getStart());
 
-  bot.chatType('private').command('new', getNew());
-  bot.chatType('private').command('clear', getClear());
+  bot.chatType('private').command('new', getNew(client));
+  bot.chatType('private').command('clear', getClear(client));
 
   bot.command('voiceMode', getChangeMode(BotMessagingMode.VOICE));
   bot.command('textMode', getChangeMode(BotMessagingMode.TEXT));

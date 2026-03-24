@@ -1,10 +1,10 @@
 import { Context, Filter, SessionFlavor } from 'grammy';
 import SessionData from '../types/SessionData.interface.js';
 import replyByMessagingMode from './utils/replyByMessagingType.js';
-import OpenAI from 'openai';
 import { StreamFlavor } from '@grammyjs/stream';
+import AIClient from 'lib/AiClient/index.js';
 
-export default (client: OpenAI) => async (ctx: Filter<StreamFlavor<Context> & SessionFlavor<SessionData>, 'message'>) => {
+export default (client: AIClient) => async (ctx: Filter<StreamFlavor<Context> & SessionFlavor<SessionData>, 'message'>) => {
   console.log('АЛЕ НАХУЙ!!!');
 
   if (ctx.message.text || ctx.message.caption || ctx.message.photo) {
@@ -15,8 +15,6 @@ export default (client: OpenAI) => async (ctx: Filter<StreamFlavor<Context> & Se
         text: ctx.message.text ?? ctx.message.caption,
         photo: ctx.message.photo,
       });
-
-      console.log(replied);
 
       return replied;
     } catch (error) {

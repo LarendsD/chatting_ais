@@ -1,9 +1,9 @@
 import { Context, Filter, SessionFlavor } from 'grammy';
 import SessionData from '../types/SessionData.interface.js';
 import replyByMessagingMode from './utils/replyByMessagingType.js';
-import OpenAI from 'openai';
+import AIClient from 'lib/AiClient/index.js';
 
-export default (client: OpenAI) => async (ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>) => {
+export default (client: AIClient) => async (ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>) => {
   console.log(ctx.message);
   const me = await ctx.api.getMe();
   if (

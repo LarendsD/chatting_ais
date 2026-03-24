@@ -4,11 +4,11 @@ import initOns from './ons/index.js';
 import BotMessagingMode from './enums/botMessagingMode.js';
 import BotContext from './types/BotContext.interface.js';
 import SessionData from './types/SessionData.interface.js';
-import OpenAI from 'openai';
 import { autoRetry } from '@grammyjs/auto-retry';
 import { stream } from '@grammyjs/stream';
+import AIClient from 'lib/AiClient/index.js';
 
-export default async (bot: BotContext, client: OpenAI) => {
+export default async (bot: BotContext, client: AIClient) => {
   const initial = (): SessionData => {
     return { messagingMode: BotMessagingMode.TEXT };
   };

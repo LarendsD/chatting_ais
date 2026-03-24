@@ -1,8 +1,7 @@
 import { Context, CommandContext, SessionFlavor, InputFile, Filter } from 'grammy';
 import SessionData from '../types/SessionData.interface.js';
-import OpenAI from 'openai';
-import { generateImage, generatePrompt, determineDenoiseStrength } from './utils/generateImageByPromt.js';
 import { PhotoSize } from 'grammy/types';
+import AIClient from 'lib/AiClient/index.js';
 
 const getImage = async (
   ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>,
@@ -35,7 +34,6 @@ const getImage = async (
 
     const imageBuffer = await fetch(url).then((r) => r.arrayBuffer());
 
-    // Для Ollama нужен формат data:image/jpeg;base64,{base64Image}
     return {
       value: imageBuffer,
       height: leastDetailedImage.height,
@@ -44,7 +42,7 @@ const getImage = async (
   }
 };
 
-export default (client: OpenAI) => async (ctx: CommandContext<Context & SessionFlavor<SessionData>>) => {
+export default (client: AIClient) => async (ctx: CommandContext<Context & SessionFlavor<SessionData>>) => {
   if (!ctx.message) {
     return ctx.reply('А промт где бля?');
   }
@@ -72,14 +70,12 @@ export default (client: OpenAI) => async (ctx: CommandContext<Context & SessionF
     return ctx.reply('А промт где бля?');
   }
 
-  // Определяем denoise на основе промпта через нейронку
-  const denoiseStrength = await determineDenoiseStrength(client, promptText);
+  const image = await client.art.images.get({
+    text: description.join(' '),
+    image: Buffer.from(file.value),
+  });
 
-  const { model, style, prompt } = await generatePrompt(client, promptText);
-
-  const image = await generateImage(prompt, model, style, Buffer.from(file.value), denoiseStrength);
-
-  return ctx.replyWithPhoto(new InputFile(new Uint8Array(image)), {
+  return ctx.replyWithPhoto(new InputFile(new Uint8Array(image as ArrayBuffer)), {
     reply_parameters: { message_id: ctx.message.message_id },
   });
 };
