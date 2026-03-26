@@ -5,6 +5,7 @@ import { VoiceModule } from '../voice.module.js';
 import { Context, ContextModule } from '../context.module.js';
 import { chattingPromt } from './chatting.promt.js';
 import { pollingPromt } from './polling.promt.js';
+import { ReasoningModule } from '../reasoning.module.js';
 
 interface SenderInfo {
   lastName?: string;
@@ -13,8 +14,19 @@ interface SenderInfo {
 }
 
 interface Message {
+  id: number;
   text?: string;
+  replyToMessageId?: number;
+  sender: SenderInfo;
+  sendDate: number;
   images?: string[];
+}
+
+interface Answer {
+  message: {
+    text: string;
+  };
+  confirm: (id: number, sendDate: number, senderInfo: SenderInfo) => void;
 }
 
 interface Poll {
@@ -23,7 +35,7 @@ interface Poll {
 }
 
 export class MessagingModule {
-  private model = 'frob/qwen3.5-instruct';
+  private model = 'sorc/qwen3.5-instruct-uncensored';
 
   constructor(
     private client: OpenAI,
@@ -31,18 +43,8 @@ export class MessagingModule {
     private hearingModule: HearingModule,
     private visionModule: VisionModule,
     private voiceModule: VoiceModule,
+    private reasoningModule: ReasoningModule,
   ) {}
-
-  private getSenderString(senderInfo: SenderInfo): string {
-    const fullname = [senderInfo.lastName, senderInfo.firstName].join(' ').trim();
-    let sender = fullname;
-
-    if (senderInfo.username) {
-      sender = `${sender} (@${senderInfo.username})`;
-    }
-
-    return sender;
-  }
 
   private getRoleFromContext(role: Context['role']): OpenAI.Responses.EasyInputMessage['role'] {
     switch (role) {
@@ -79,30 +81,26 @@ export class MessagingModule {
     ];
   }
 
-  private async formatUserMessage(senderInfo: SenderInfo, message: Message): Promise<string> {
-    let text = '';
-
-    if (message.text) {
-      const sender = this.getSenderString(senderInfo);
-
-      text = `[${sender}]: ${message.text}`;
-    }
+  private async formatUserMessage(message: Message): Promise<Message> {
+    const formattedMessage = { ...message };
 
     if (message.images) {
       const descriptions = await this.visionModule.getImageDescriptions(message.images);
 
       const formattedDescriptions = descriptions.map((description) => `[Вложение: изображение]\n${description}\n[/Вложение]`);
 
-      text = [formattedDescriptions.join('\n'), text].join('\n\n');
+      formattedMessage.images = formattedDescriptions;
     }
 
-    return text;
+    return formattedMessage;
   }
 
-  async getAnswer(senderInfo: SenderInfo, message: Message): Promise<Message> {
-    const userMessage = await this.formatUserMessage(senderInfo, message);
+  async getAnswer(message: Message): Promise<Answer> {
+    const userMessage = await this.formatUserMessage(message);
 
-    const input = this.getInputWithContext(userMessage);
+    const stringifiedMessage = JSON.stringify(userMessage);
+
+    const input = this.getInputWithContext(stringifiedMessage);
 
     const res = await this.client.responses.create({
       model: this.model,
@@ -113,22 +111,39 @@ export class MessagingModule {
 
     this.contextModule.add({
       role: 'user',
-      text: userMessage,
+      text: stringifiedMessage,
     });
 
-    this.contextModule.add({
-      role: 'me',
-      text: res.output_text,
-    });
+    const confirm = (
+      _id: number,
+      _sendDate: number,
+      _senderInfo: SenderInfo,
+    ) => {
+      /* const myMessage: Message = {
+        id,
+        replyToMessageId: message.id,
+        sender: senderInfo,
+        text: res.output_text,
+        sendDate,
+      }; */
+
+      this.contextModule.add({
+        role: 'me',
+        text: res.output_text,
+      });
+    };
 
     return {
-      text: res.output_text,
+      message: {
+        text: res.output_text,
+      },
+      confirm,
     };
   }
 
   async getRandomPoll(): Promise<Poll> {
     const response = await this.client.responses.create({
-      model: 'CognitiveComputations/dolphin-llama3.1:8b',
+      model: this.model,
       instructions: pollingPromt,
       input: [
         {

@@ -60,16 +60,18 @@ const getResponse = async (
   const senderInfo = {
     firstName: ctx.message.from.first_name,
     lastName: ctx.message.from.last_name,
-    username: ctx.message.from.username,
+    username: `@${ctx.message.from.username}`,
   };
 
   const message = {
+    id: ctx.message.message_id,
+    sendDate: ctx.message.date,
+    sender: senderInfo,
     text: data.text,
     images: image ? [image.value] : [],
   };
 
   const response = await client.chats.messaging.getAnswer(
-    senderInfo,
     message,
   );
 
@@ -83,15 +85,25 @@ const textReply = async (
 ) => {
   const response = await getResponse(ctx, client, data);
 
-  if (!response.text) {
+  if (!response.message.text) {
     throw new Error('WTF???');
   }
 
-  console.log(response.text);
+  console.log(response.message.text);
 
-  const replied = await ctx.reply(response.text, {
+  const replied = await ctx.reply(response.message.text, {
     reply_parameters: { message_id: ctx.message.message_id },
   });
+
+  response.confirm(
+    replied.message_id,
+    replied.date,
+    {
+      firstName: ctx.me.first_name,
+      lastName: ctx.me.last_name,
+      username: `@${ctx.me.username}`,
+    }
+  );
 
   return {
     messageId: replied.message_id,

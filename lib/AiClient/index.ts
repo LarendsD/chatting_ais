@@ -6,6 +6,7 @@ import { ContextModule } from './modules/context.module.js';
 import { VisionModule } from './modules/vision.module.js';
 import { VoiceModule } from './modules/voice.module.js';
 import { ArtModule } from './modules/art/index.js';
+import { ReasoningModule } from './modules/reasoning.module.js';
 
 class AIClient {
   private client: OpenAI;
@@ -23,6 +24,7 @@ class AIClient {
     const context = new ContextModule();
     const vision = new VisionModule(this.client);
     const voice = new VoiceModule();
+    const reasoning = new ReasoningModule(this.client, context);
 
     this.chats = new ChatsModule(
       this.client,
@@ -30,6 +32,7 @@ class AIClient {
       hearing,
       vision,
       voice,
+      reasoning,
     );
 
     this.art = new ArtModule(this.client);

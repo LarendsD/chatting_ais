@@ -23,7 +23,9 @@ export default async (bot: BotContext, client: AIClient) => {
   initOns(bot, client);
 
   void bot.start({
-    onStart: (botInfo) => console.log(`Bot ${botInfo.username} started!`),
+    onStart: (botInfo) => {
+      console.log(`Bot ${botInfo.username} started!`);
+    },
   });
 
   bot.catch((error) => {
