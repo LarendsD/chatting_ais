@@ -33,7 +33,7 @@ export class ChatsModule {
     writeFileSync(this.contextPath, JSON.stringify([]));
   }
 
-  clear() {
-    this.contextModule.clear();
+  clear(conversationId: number) {
+    this.contextModule.clear(conversationId.toString());
   }
 }

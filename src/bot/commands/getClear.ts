@@ -15,7 +15,7 @@ export default (client: AIClient) => async (ctx: CommandContext<Context>) => {
     });
   }
 
-  client.chats.clear();
+  client.chats.clear(ctx.chat.id);
 
   return ctx.reply('История удалена!');
 };

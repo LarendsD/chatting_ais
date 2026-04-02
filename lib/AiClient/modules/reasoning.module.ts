@@ -20,11 +20,11 @@ export class ReasoningModule {
     }
   }
 
-  async decideBool(question: string): Promise<boolean> {
+  async decideBool(contextId: string, question: string): Promise<boolean> {
     let decideInstructions = `Ты мозговой отдел большой структуры бота, твоя задача: решать различные вопросы, которые требуют только ответа "Да" или "Нет", отвечай только двумя значениями: 1 или 0`;
     decideInstructions = `${decideInstructions}\n${question}`;
 
-    const context = this.context.get();
+    const context = this.context.get(contextId);
 
     const formattedContext: OpenAI.Responses.ResponseInput = context.map((ctx) => ({
       role: this.getRoleFromContext(ctx.role),

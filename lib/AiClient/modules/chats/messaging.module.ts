@@ -29,6 +29,10 @@ interface Answer {
   confirm: (id: number, sendDate: number, senderInfo: SenderInfo) => void;
 }
 
+interface Conversation {
+  id: number;
+}
+
 interface Poll {
   question: string;
   answers: string[];
@@ -58,9 +62,10 @@ export class MessagingModule {
   }
 
   private getInputWithContext(
+    contextId: string,
     formattedUserMessage: string,
   ): OpenAI.Responses.ResponseInputItem[] {
-    const context = this.contextModule.get();
+    const context = this.contextModule.get(contextId);
 
     const formattedContext: OpenAI.Responses.ResponseInput = context.map((ctx) => ({
       role: this.getRoleFromContext(ctx.role),
@@ -87,31 +92,37 @@ export class MessagingModule {
     if (message.images) {
       const descriptions = await this.visionModule.getImageDescriptions(message.images);
 
-      const formattedDescriptions = descriptions.map((description) => `[Вложение: изображение]\n${description}\n[/Вложение]`);
-
-      formattedMessage.images = formattedDescriptions;
+      formattedMessage.images = descriptions;
     }
 
     return formattedMessage;
   }
 
-  async getAnswer(message: Message): Promise<Answer> {
+  async getAnswer(conversation: Conversation, message: Message): Promise<Answer | null> {
     const userMessage = await this.formatUserMessage(message);
 
     const stringifiedMessage = JSON.stringify(userMessage);
 
-    const input = this.getInputWithContext(stringifiedMessage);
+    const contextId = conversation.id.toString();
+
+    this.contextModule.add(contextId, {
+      role: 'user',
+      text: stringifiedMessage,
+    });
+
+    const mustAnswer = this.reasoningModule.decideBool(contextId, 'Пришло новое сообщение в группе, на основе контекста определи, нужно ли тебе на него отвечать?');
+
+    if (!mustAnswer) {
+      return null;
+    }
+
+    const input = this.getInputWithContext(contextId, stringifiedMessage);
 
     const res = await this.client.responses.create({
       model: this.model,
       instructions: chattingPromt,
       input,
       temperature: 0.7,
-    });
-
-    this.contextModule.add({
-      role: 'user',
-      text: stringifiedMessage,
     });
 
     const confirm = (
@@ -127,7 +138,7 @@ export class MessagingModule {
         sendDate,
       }; */
 
-      this.contextModule.add({
+      this.contextModule.add(contextId, {
         role: 'me',
         text: res.output_text,
       });

@@ -1,5 +1,4 @@
 import { Context, Filter, SessionFlavor } from 'grammy';
-import { writeFileSync } from 'fs';
 import BotMessagingMode from 'src/bot/enums/botMessagingMode.js';
 import SessionData from 'src/bot/types/SessionData.interface.js';
 import { PhotoSize } from 'grammy/types';
@@ -39,8 +38,6 @@ export const getImage = async (
     const imageBuffer = await fetch(url).then((r) => r.arrayBuffer());
     const base64Image = Buffer.from(imageBuffer).toString('base64');
 
-    writeFileSync('image.png', Buffer.from(imageBuffer) as NodeJS.ArrayBufferView);
-
     // Для Ollama нужен формат data:image/jpeg;base64,{base64Image}
     return {
       value: `data:image/jpeg;base64,${base64Image}`,
@@ -63,6 +60,10 @@ const getResponse = async (
     username: `@${ctx.message.from.username}`,
   };
 
+  const conversation = {
+    id: ctx.message.chat.id,
+  };
+
   const message = {
     id: ctx.message.message_id,
     sendDate: ctx.message.date,
@@ -72,6 +73,7 @@ const getResponse = async (
   };
 
   const response = await client.chats.messaging.getAnswer(
+    conversation,
     message,
   );
 
@@ -84,6 +86,10 @@ const textReply = async (
   data: Data,
 ) => {
   const response = await getResponse(ctx, client, data);
+
+  if (!response) {
+    return null;
+  }
 
   if (!response.message.text) {
     throw new Error('WTF???');
@@ -115,15 +121,11 @@ interface Data {
   photo?: PhotoSize[];
 }
 
-interface ReplyByMessagingModeResult {
-  messageId: number;
-}
-
 const replyByMessagingMode = async (
   ctx: Filter<Context & SessionFlavor<SessionData>, 'message'>,
   client: AIClient,
   data: Data,
-): Promise<ReplyByMessagingModeResult> => {
+) => {
   const messagingMode = ctx.session.messagingMode;
 
   switch (messagingMode) {
